@@ -49,7 +49,7 @@ def plot_timechart(lines):
 		xdims = []
 		for p in parts:
 			start = float(p[1])
-			if args.tclength:
+			if args.duration:
 				diff = float(p[2])
 			else:
 				end = float(p[2])
@@ -66,6 +66,11 @@ def main():
 	else:
 		lines = [l.split() for l in lines]
 	args.plotmode(lines)
+
+	if args.xlabel:
+		plt.xlabel(args.xlabel)
+	if args.ylabel:
+		plt.ylabel(args.ylabel)
 
 	if args.outfile:
 		plt.savefig(args.outfile)
@@ -101,15 +106,23 @@ if __name__ == "__main__":
 		               help="number of bins (default 15)")
 		p.set_defaults(nbins=15)
 
-	timechartparser.add_argument('-l',"--start-length",dest="tclength",
-	                             action="store_const",const=True,
-	                             help="read data items as (label,start,length) "
-	                             "instead of default (label,start,end)")
-	timechartparser.set_defaults(tclength=False)
+	timechartparser.add_argument('-d',"--duration",action="store_const",
+	                             const=True,help="read data items as"
+	                             " (label,start,length) instead of default"
+	                             " (label,start,end)")
+	timechartparser.set_defaults(duration=False)
 
 	mainparser.add_argument('-o',"--outfile",type=str,
 	                        help="file to save plot in (default none)")
 	mainparser.set_defaults(outfile=None)
+
+	mainparser.add_argument('-x',"--xlabel",type=str,
+	                        help="x-axis label")
+	mainparser.set_defaults(xlabel=None)
+
+	mainparser.add_argument('-y',"--ylabel",type=str,
+	                        help="y-axis label")
+	mainparser.set_defaults(ylabel=None)
 
 	args = mainparser.parse_args()
 
