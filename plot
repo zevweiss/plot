@@ -51,8 +51,12 @@ def plot_timechart(lines):
 		xdims = []
 		for p in parts:
 			start = float(p[1])
-			end = float(p[2])
-			xdims.append((start,end-start))
+			if args.tclength:
+				diff = float(p[2])
+			else:
+				end = float(p[2])
+				diff = end-start
+			xdims.append((start,diff))
 		plt.broken_barh(xdims,ydim,alpha=0.5)
 
 	plt.yticks([x + 0.5 for x in xrange(0,len(idnums))],ids)
@@ -98,6 +102,12 @@ if __name__ == "__main__":
 		p.add_argument('-b',"--bins",dest="nbins",type=int,metavar="NBINS",
 		               help="number of bins (default 15)")
 		p.set_defaults(nbins=15)
+
+	timechartparser.add_argument('-l',"--start-length",dest="tclength",
+	                             action="store_const",const=True,
+	                             help="read data items as (label,start,length) "
+	                             "instead of default (label,start,end)")
+	timechartparser.set_defaults(tclength=False)
 
 	mainparser.add_argument('-o',"--outfile",type=str,
 	                        help="file to save plot in (default none)")
