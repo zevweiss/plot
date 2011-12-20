@@ -10,7 +10,6 @@ def plot_line(lines):
 	xs = [float(l[0]) for l in lines]
 	ys = [float(l[1]) for l in lines]
 	plt.plot(xs,ys)
-	pass
 
 # expects list of single values
 def plot_hist(lines):
@@ -30,7 +29,6 @@ def plot_bars(lines):
 	w = 0.8
 	plt.bar(range(0,len(lines)),values,width=w)
 	plt.xticks([i + w/2 for i in range(0,len(lines))],labels)
-	pass
 
 # expects a list of single values
 def plot_cdf(lines):
