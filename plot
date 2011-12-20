@@ -64,7 +64,11 @@ def main():
 	else:
 		lines = [l.split() for l in lines]
 	args.plotmode(lines)
-	plt.show()
+
+	if args.outfile:
+		plt.savefig(args.outfile)
+	else:
+		plt.show()
 
 if __name__ == "__main__":
 	mainparser = argparse.ArgumentParser(description="plot data from stdin")
@@ -94,6 +98,10 @@ if __name__ == "__main__":
 		p.add_argument('-b',"--bins",dest="nbins",type=int,metavar="NBINS",
 		               help="number of bins (default 15)")
 		p.set_defaults(nbins=15)
+
+	mainparser.add_argument('-o',"--outfile",type=str,
+	                        help="file to save plot in (default none)")
+	mainparser.set_defaults(outfile=None)
 
 	args = mainparser.parse_args()
 
