@@ -32,11 +32,30 @@ def plot_bars(lines):
 	plt.xticks([i + w/2 for i in range(0,len(lines))],labels)
 	pass
 
+# expects a list of single values
 def plot_cdf(lines):
 	vals = [float(x[0]) for x in lines]
 	plt.hist(vals,args.nbins,cumulative=True,histtype='step')
 	plt.xlim(0,max(vals))
 	plt.ylim(0,len(vals))
+
+# expects list of (label,start,end) tuples
+def plot_timechart(lines):
+	ids = sorted(set([l[0] for l in lines]))
+	idnums = dict([(j,i) for (i,j) in enumerate(ids)])
+
+	for label in ids:
+		parts = [l for l in lines if l[0] == label]
+		base = idnums[label]
+		ydim = (base,1)
+		xdims = []
+		for p in parts:
+			start = float(p[1])
+			end = float(p[2])
+			xdims.append((start,end-start))
+		plt.broken_barh(xdims,ydim,alpha=0.5)
+
+	plt.yticks([x + 0.5 for x in xrange(0,len(idnums))],ids)
 
 def main():
 	lines = sys.stdin.readlines()
@@ -60,6 +79,8 @@ if __name__ == "__main__":
 	                    const=plot_bars,help="draw bar chart")
 	parser.add_argument('-c',"--cdf",dest="plotmode",action="store_const",
 	                    const=plot_cdf,help="draw cumulative distribution function")
+	parser.add_argument('-t',"--timechart",dest="plotmode",action="store_const",
+	                    const=plot_timechart,help="draw timechart")
 
 	parser.add_argument('-n',"--bins",dest="nbins",type=int,metavar="NBINS",
 	                    help="number of bins for histograms/cdfs (default 10)")

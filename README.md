@@ -17,6 +17,10 @@ Reads data from stdin and pops up a window showing a plot of it.
 
 - Scatter plot (-s, --scatter): expects (x,y) pairs
 
+- Cumulative distribution (-c, --cdf): expects single values
+
+- Timechart (-t, --timechart): expects (label,start,end) tuples
+
 ## Examples
 
 To show a 20-binned histogram of git commit frequency:
