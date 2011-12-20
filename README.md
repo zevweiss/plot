@@ -1,5 +1,5 @@
-`plot`
-======
+plot
+====
 
 A simple but useful wrapper around some basic pyplot functionality.
 
@@ -22,6 +22,12 @@ Reads data from stdin and pops up a window showing a plot of it.
 To show a 20-binned histogram of git commit frequency:
 
     $ git log --date=short --pretty=tformat:"%ad" | uniq -c | plot --histogram --bins 20
+
+## TODO
+
+- Multi-dataset support
+
+- Label support (e.g. flag to read first line as list of labels)
 
 ## Author
 

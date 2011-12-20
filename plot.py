@@ -32,7 +32,6 @@ def plot_bars(lines):
 	plt.xticks([i + w/2 for i in range(0,len(lines))],labels)
 	pass
 
-plotmode = plot_line
 
 def main():
 	lines = sys.stdin.readlines()
