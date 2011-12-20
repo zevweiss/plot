@@ -67,28 +67,34 @@ def main():
 	plt.show()
 
 if __name__ == "__main__":
-	parser = argparse.ArgumentParser(description="plot data from stdin")
+	mainparser = argparse.ArgumentParser(description="plot data from stdin")
 
-	parser.add_argument('-l',"--line",dest="plotmode",action="store_const",
-	                    const=plot_line,help="draw line plot (default)")
-	parser.add_argument('-s',"--scatter",dest="plotmode",action="store_const",
-	                    const=plot_scatter,help="draw scatter plot")
-	parser.add_argument('-g',"--histogram",dest="plotmode",action="store_const",
-	                    const=plot_hist,help="draw histogram")
-	parser.add_argument('-b',"--bar",dest="plotmode",action="store_const",
-	                    const=plot_bars,help="draw bar chart")
-	parser.add_argument('-c',"--cdf",dest="plotmode",action="store_const",
-	                    const=plot_cdf,help="draw cumulative distribution function")
-	parser.add_argument('-t',"--timechart",dest="plotmode",action="store_const",
-	                    const=plot_timechart,help="draw timechart")
+	subparsers = mainparser.add_subparsers()
 
-	parser.add_argument('-n',"--bins",dest="nbins",type=int,metavar="NBINS",
-	                    help="number of bins for histograms/cdfs (default 10)")
+	# python 2.7 doesn't support aliases in add_parser, sadly.
+	lineparser = subparsers.add_parser("line",help="draw line plot")
+	lineparser.set_defaults(plotmode=plot_line)
 
-	args = parser.parse_args()
-	if args.plotmode is None:
-		args.plotmode = plot_line
-	if args.nbins is None:
-		args.nbins = 10
+	scatterparser = subparsers.add_parser("scatter",help="draw scatter plot")
+	scatterparser.set_defaults(plotmode=plot_scatter)
+
+	histparser = subparsers.add_parser("hist",help="draw histogram")
+	histparser.set_defaults(plotmode=plot_hist)
+
+	barparser = subparsers.add_parser("bar",help="draw bar chart")
+	barparser.set_defaults(plotmode=plot_bars)
+
+	cdfparser = subparsers.add_parser("cdf",help="draw cumulative distribution")
+	cdfparser.set_defaults(plotmode=plot_cdf)
+
+	timechartparser = subparsers.add_parser("tc",help="draw timechart")
+	timechartparser.set_defaults(plotmode=plot_timechart)
+
+	for p in [histparser,cdfparser]:
+		p.add_argument('-b',"--bins",dest="nbins",type=int,metavar="NBINS",
+		               help="number of bins (default 15)")
+		p.set_defaults(nbins=15)
+
+	args = mainparser.parse_args()
 
 	main()
