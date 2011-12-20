@@ -32,7 +32,7 @@ To show a 20-binned histogram of git commit frequency:
 
 Scatter plot of line count vs. file size:
 
-    $ wc -lc * | head -n-1 | plot scatter
+    $ wc -lc * | head -n-1 | plot -x Lines -y Bytes scatter
 
 ## TODO
 
@@ -42,7 +42,7 @@ Scatter plot of line count vs. file size:
 
 - pyplot kwargs in command-line arguments
 
-- Axis labels
+- Logarithmic axes
 
 ## Author
 
