@@ -32,6 +32,11 @@ def plot_bars(lines):
 	plt.xticks([i + w/2 for i in range(0,len(lines))],labels)
 	pass
 
+def plot_cdf(lines):
+	vals = [float(x[0]) for x in lines]
+	plt.hist(vals,args.nbins,cumulative=True,histtype='step')
+	plt.xlim(0,max(vals))
+	plt.ylim(0,len(vals))
 
 def main():
 	lines = sys.stdin.readlines()
@@ -53,9 +58,11 @@ if __name__ == "__main__":
 	                    const=plot_hist,help="draw histogram")
 	parser.add_argument('-b',"--bar",dest="plotmode",action="store_const",
 	                    const=plot_bars,help="draw bar chart")
+	parser.add_argument('-c',"--cdf",dest="plotmode",action="store_const",
+	                    const=plot_cdf,help="draw cumulative distribution function")
 
 	parser.add_argument('-n',"--bins",dest="nbins",type=int,metavar="NBINS",
-	                    help="number of bins for histograms (default 10)")
+	                    help="number of bins for histograms/cdfs (default 10)")
 
 	args = parser.parse_args()
 	if args.plotmode is None:
