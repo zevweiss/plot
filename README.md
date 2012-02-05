@@ -28,11 +28,15 @@ can be whitespace- or comma-separated.
 
 To show a 20-binned histogram of git commit frequency:
 
-    $ git log --date=short --pretty=tformat:"%ad" | uniq -c | plot histogram --bins 20
+    $ git log --date=short --pretty=tformat:"%ad" | uniq -c | plot hist --bins 20
 
 Scatter plot of line count vs. file size:
 
     $ wc -lc * | head -n-1 | plot -x Lines -y Bytes scatter
+
+Cumulative distribution of word length
+
+    $ awk '{ for (i=1; i<=NF; i++) print length($i) }' wrnpc.txt | plot cdf -b20
 
 ## TODO
 

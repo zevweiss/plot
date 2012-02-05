@@ -33,9 +33,9 @@ def plot_bars(lines):
 # expects a list of single values
 def plot_cdf(lines):
 	vals = [float(x[0]) for x in lines]
-	plt.hist(vals,args.nbins,cumulative=True,histtype='step')
+	plt.hist(vals,args.nbins,cumulative=True,histtype='step',normed=args.norm)
 	plt.xlim(0,max(vals))
-	plt.ylim(0,len(vals))
+	plt.ylim(0,1 if args.norm else len(vals))
 
 # expects list of (label,start,end) tuples
 def plot_timechart(lines):
@@ -105,10 +105,9 @@ if __name__ == "__main__":
 		p.add_argument('-b',"--bins",dest="nbins",type=int,metavar="NBINS",
 		               help="number of bins (default 15)")
 		p.set_defaults(nbins=15)
-
-	histparser.add_argument('-a',"--absolute",dest="norm",action="store_const",
-	                        const=False,help="Don't normalize y-axis")
-	histparser.set_defaults(norm=True)
+		p.add_argument('-a',"--absolute",dest="norm",action="store_const",
+		               const=False,help="Don't normalize y-axis")
+		p.set_defaults(norm=True)
 
 	timechartparser.add_argument('-d',"--duration",action="store_const",
 	                             const=True,help="read data items as"
