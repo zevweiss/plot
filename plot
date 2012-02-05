@@ -73,7 +73,7 @@ def main():
 		plt.ylabel(args.ylabel)
 
 	if args.outfile:
-		plt.savefig(args.outfile)
+		plt.savefig(args.outfile,dpi=args.dpi)
 	else:
 		plt.show()
 
@@ -118,6 +118,10 @@ if __name__ == "__main__":
 	mainparser.add_argument('-o',"--outfile",type=str,
 	                        help="file to save plot in (default none)")
 	mainparser.set_defaults(outfile=None)
+
+	mainparser.add_argument('-r',"--dpi",type=int,
+	                        help="resolution of output file (dots per inch)")
+	mainparser.set_defaults(dpi=None)
 
 	mainparser.add_argument('-x',"--xlabel",type=str,
 	                        help="x-axis label")
