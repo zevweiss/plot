@@ -46,5 +46,5 @@ Scatter plot of line count vs. file size:
 
 ## Author
 
-Zev Weiss  
+Zev Weiss
 <zevweiss@gmail.com>
