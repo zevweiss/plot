@@ -71,6 +71,8 @@ def main():
 		plt.xlabel(args.xlabel)
 	if args.ylabel:
 		plt.ylabel(args.ylabel)
+	if args.title:
+		plt.title(args.title)
 
 	if args.outfile:
 		plt.savefig(args.outfile,dpi=args.dpi)
@@ -130,6 +132,10 @@ if __name__ == "__main__":
 	mainparser.add_argument('-y',"--ylabel",type=str,
 	                        help="y-axis label")
 	mainparser.set_defaults(ylabel=None)
+
+	mainparser.add_argument('-t',"--title",type=str,
+	                        help="plot title")
+	mainparser.set_defaults(title=None)
 
 	args = mainparser.parse_args()
 
