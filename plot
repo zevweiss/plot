@@ -29,6 +29,7 @@ def plot_bars(lines):
 	w = 0.8
 	plt.bar(range(0,len(lines)),values,width=w)
 	plt.xticks([i + w/2 for i in range(0,len(lines))],labels)
+	plt.xlim(0,len(lines))
 
 # expects a list of single values
 def plot_cdf(lines):
