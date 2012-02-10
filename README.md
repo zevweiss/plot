@@ -22,7 +22,7 @@ can be whitespace- or comma-separated.
 
 - Cumulative distribution (`cdf`): expects single values
 
-- Timechart (`tc`): expects (label,start,end) tuples
+- Timechart (`tc`): expects (label,start,end) or (label,start,length) tuples
 
 ## Examples
 
