@@ -5,10 +5,14 @@ import matplotlib.pyplot as plt
 import sys
 import argparse
 
-# Expects list of (x,y) tuples
+# Expects list of (x,y) tuples or single y-values
 def plot_line(lines):
-	xs = [float(l[0]) for l in lines]
-	ys = [float(l[1]) for l in lines]
+	if len(lines[0]) == 1:
+		ys = [float(l[0]) for l in lines]
+		xs = range(0,len(ys))
+	else:
+		xs = [float(l[0]) for l in lines]
+		ys = [float(l[1]) for l in lines]
 	plt.plot(xs,ys)
 
 # expects list of single values

@@ -12,7 +12,7 @@ can be whitespace- or comma-separated.
 
 `plot TYPE` can generate the following `TYPE`s of graphs:
 
-- Line graphs (`line`): expects (x,y) pairs
+- Line graphs (`line`): expects (x,y) pairs or single y-values
 
 - Bar graphs (`bar`): expects (label,value) pairs
 
