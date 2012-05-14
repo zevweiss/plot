@@ -84,6 +84,10 @@ def main():
 	if args.title:
 		plt.title(args.title)
 
+	if args.ylim is not None:
+		ylo, yhi = [int(x) for x in args.ylim.split(',')]
+		plt.ylim(ylo, yhi)
+
 	if args.outfile:
 		plt.savefig(args.outfile,dpi=args.dpi)
 	else:
@@ -144,6 +148,10 @@ if __name__ == "__main__":
 	mainparser.add_argument('-y',"--ylabel",type=str,
 	                        help="y-axis label")
 	mainparser.set_defaults(ylabel=None)
+
+	mainparser.add_argument('-Y', "--ylim", type=str,
+	                        help="y-axis bounds (comma-separated)")
+	mainparser.set_defaults(ylim=None)
 
 	mainparser.add_argument('-t',"--title",type=str,
 	                        help="plot title")
