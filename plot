@@ -129,21 +129,20 @@ if __name__ == "__main__":
 	                             "items as (label, start, length) instead of "
 	                             "default (label, start, end)")
 
-	mainparser.add_argument('-l', "--live", action="store_const", const=True,
-	                        default=False, help="update plot as data appears")
+	mainargs = [(('-t', "--title"), dict(type=str, help="plot title")),
+	            (('-x', "--xlabel"), dict(type=str, help="x-axis label")),
+	            (('-y', "--ylabel"), dict(type=str, help="y-axis label")),
+	            (('-Y', "--ylim"), dict(type=str, help="y-axis bounds")),
+	            (('-o', "--outfile"),
+	             dict(type=str, help="file to save plot in (default none)")),
+	            (('-r', "--dpi"),
+	             dict(type=int, help="resolution of output file (dots per inch)")),
+	            (('-l', "--live"),
+	             dict(action="store_const", const=True, default=False,
+	                  help="update plot as data appears"))]
 
-	mainparser.add_argument('-o', "--outfile", type=str,
-	                        help="file to save plot in (default none)")
-
-	mainparser.add_argument('-r', "--dpi", type=int,
-	                        help="resolution of output file (dots per inch)")
-
-	mainparser.add_argument('-t', "--title", type=str, help="plot title")
-	mainparser.add_argument('-x', "--xlabel", type=str, help="x-axis label")
-	mainparser.add_argument('-y', "--ylabel", type=str, help="y-axis label")
-
-	mainparser.add_argument('-Y', "--ylim", type=str,
-	                        help="y-axis bounds (comma-separated)")
+	for args, kwargs in mainargs:
+		mainparser.add_argument(*args, **kwargs)
 
 	args = mainparser.parse_args()
 
