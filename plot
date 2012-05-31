@@ -37,7 +37,10 @@ def plot_bars(lines):
 		sys.stderr.write("Bar plot error, perhaps '%s' is an invalid "
 		                 "color?\n" % args.color)
 		sys.exit(1)
-	plt.xticks([i + w/2 for i in range(0, len(lines))], labels)
+
+	plt.xticks([i + w/2 for i in range(0, len(lines))], labels,
+	           rotation=args.labelangle, rotation_mode="anchor",
+	           ha=["center", "right", "left"][cmp(args.labelangle, 0.0)])
 	plt.xlim(w-1, len(lines))
 
 # expects a list of single values
@@ -111,6 +114,8 @@ if __name__ == "__main__":
 	barparser = subparsers.add_parser("bar", help="draw bar chart")
 	barparser.set_defaults(plotmode=plot_bars)
 	barparser.add_argument('-c', "--color", type=str, help="color of plotted bars")
+	barparser.add_argument('-r', "--angle", dest="labelangle", type=float,
+	                       help="label angle (degrees)", default=0.0)
 
 	cdfparser = subparsers.add_parser("cdf", help="draw cumulative distribution")
 	cdfparser.set_defaults(plotmode=plot_cdf)
