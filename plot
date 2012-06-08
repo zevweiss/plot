@@ -35,6 +35,9 @@ def plot_bars(lines):
 	ngrps = len(values)
 	w = 0.8
 
+	args.colors = args.colors.split(',') if args.colors is not None else [None]
+	args.legend = args.legend.split(',') if args.legend is not None else None
+
 	for i in range(0, grpsize):
 		color = args.colors[i % len(args.colors)]
 		base = i*w/grpsize
@@ -94,8 +97,6 @@ def main():
 		lines = [l.split(',') for l in lines]
 	else:
 		lines = [l.split() for l in lines]
-	args.colors = args.colors.split(',') if args.colors is not None else [None]
-	args.legend = args.legend.split(',') if args.legend is not None else None
 	args.plotmode(lines)
 
 	if args.xlabel:
