@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import numpy as np
 import matplotlib.pyplot as plt
 
 import sys
@@ -29,19 +30,34 @@ def plot_scatter(lines):
 # expects list of (label, value) pairs
 def plot_bars(lines):
 	labels = [l[0] for l in lines]
-	values = [float(l[1]) for l in lines]
+	values = [[float(x) for x in l[1:]] for l in lines]
+	grpsize = len(values[0])
+	ngrps = len(values)
 	w = 0.8
-	try:
-		plt.bar(range(0, len(lines)), values, width=w, color=args.color)
-	except ValueError:
-		sys.stderr.write("Bar plot error, perhaps '%s' is an invalid "
-		                 "color?\n" % args.color)
-		sys.exit(1)
+
+	for i in range(0, grpsize):
+		color = args.colors[i % len(args.colors)]
+		base = i*w/grpsize
+		try:
+			label = args.legend[i]
+		except:
+			label = None
+
+		try:
+			plt.bar(np.arange(base, ngrps+base), [v[i] for v in values],
+			        width=w/grpsize, color=color, label=label)
+		except ValueError:
+			sys.stderr.write("Bar plot error, perhaps '%s' is an invalid"
+			                 " color?\n" % color)
+			sys.exit(1)
 
 	plt.xticks([i + w/2 for i in range(0, len(lines))], labels,
 	           rotation=args.labelangle, rotation_mode="anchor",
 	           ha=["center", "right", "left"][cmp(args.labelangle, 0.0)])
 	plt.xlim(w-1, len(lines))
+
+	if args.legend is not None:
+		plt.legend()
 
 # expects a list of single values
 def plot_cdf(lines):
@@ -78,6 +94,8 @@ def main():
 		lines = [l.split(',') for l in lines]
 	else:
 		lines = [l.split() for l in lines]
+	args.colors = args.colors.split(',') if args.colors is not None else [None]
+	args.legend = args.legend.split(',') if args.legend is not None else None
 	args.plotmode(lines)
 
 	if args.xlabel:
@@ -113,9 +131,11 @@ if __name__ == "__main__":
 
 	barparser = subparsers.add_parser("bar", help="draw bar chart")
 	barparser.set_defaults(plotmode=plot_bars)
-	barparser.add_argument('-c', "--color", type=str, help="color of plotted bars")
+	barparser.add_argument('-c', "--colors", type=str,
+	                       help="color(s) of plotted bars, comma-separated")
 	barparser.add_argument('-r', "--angle", dest="labelangle", type=float,
 	                       help="label angle (degrees)", default=0.0)
+	barparser.add_argument('-L', "--legend", type=str, help="labels for legend")
 
 	cdfparser = subparsers.add_parser("cdf", help="draw cumulative distribution")
 	cdfparser.set_defaults(plotmode=plot_cdf)
