@@ -73,12 +73,17 @@ def plot_timechart(lines):
 	plt.yticks([x + 0.5 for x in xrange(0, len(idnums))], ids)
 
 def main():
-	lines = sys.stdin.readlines()
-	if ',' in lines[0]:
-		lines = [l.split(',') for l in lines]
+	if args.live:
+		lines = [sys.stdin.readline()]
 	else:
-		lines = [l.split() for l in lines]
-	args.plotmode(lines)
+		lines = sys.stdin.readlines()
+
+	if ',' in lines[0]:
+		splitfn = lambda l: l.split(',')
+	else:
+		splitfn = lambda l: l.split()
+
+	lines = [splitfn(l) for l in lines]
 
 	if args.xlabel:
 		plt.xlabel(args.xlabel)
@@ -87,9 +92,23 @@ def main():
 	if args.title:
 		plt.title(args.title)
 
+	args.plotmode(lines)
+
 	if args.ylim is not None:
 		ylo, yhi = [int(x) for x in args.ylim.split(',')]
 		plt.ylim(ylo, yhi)
+
+	if args.live:
+		plt.ion()
+		plt.draw()
+		while True:
+			newline = sys.stdin.readline()
+			sys.stderr.write("got new line: %s" % newline)
+			if newline == '':
+				return
+			lines.append(splitfn(newline))
+			args.plotmode(lines)
+			plt.draw()
 
 	if args.outfile:
 		plt.savefig(args.outfile, dpi=args.dpi)
