@@ -110,6 +110,9 @@ def main():
 		ylo, yhi = [float(x) for x in args.ylim.split(',')]
 		plt.ylim(ylo, yhi)
 
+	xgeom, ygeom = [float(s) for s in args.geometry.split(',')]
+	plt.gcf().set_size_inches(xgeom, ygeom, forward=True)
+
 	if args.outfile:
 		plt.savefig(args.outfile, dpi=args.dpi)
 	else:
@@ -163,6 +166,9 @@ if __name__ == "__main__":
 	             dict(type=str, help="file to save plot in (default none)")),
 	            (('-r', "--dpi"),
 	             dict(type=int, help="resolution of output file (dots per inch)")),
+	            (('-g', "--geometry"),
+	             dict(type=str, default="8,6",
+	                  help="figure geometry in X,Y format (inches)")),
 	            (('-l', "--live"),
 	             dict(action="store_const", const=True, default=False,
 	                  help="update plot as data appears"))]
