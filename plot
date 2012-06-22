@@ -107,7 +107,7 @@ def main():
 		plt.title(args.title)
 
 	if args.ylim is not None:
-		ylo, yhi = [int(x) for x in args.ylim.split(',')]
+		ylo, yhi = [float(x) for x in args.ylim.split(',')]
 		plt.ylim(ylo, yhi)
 
 	if args.outfile:
