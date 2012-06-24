@@ -1,6 +1,10 @@
 #!/usr/bin/python
 
 import numpy as np
+import matplotlib
+from os import getenv
+if not getenv('DISPLAY'):
+	matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 import sys
@@ -177,5 +181,9 @@ if __name__ == "__main__":
 		mainparser.add_argument(*args, **kwargs)
 
 	args = mainparser.parse_args()
+
+	if not args.outfile and not getenv('DISPLAY'):
+		sys.stderr.write("No output file specified but DISPLAY not set\n")
+		sys.exit(1)
 
 	main()
