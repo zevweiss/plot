@@ -10,15 +10,31 @@ import matplotlib.pyplot as plt
 import sys
 import argparse
 
-# Expects list of (x, y) tuples or single y-values
+# By default, expects list of tuples of Y values.  With -x, the first
+# element of each tuple is instead interpreted as the X value for the
+# remaining Y values.
 def plot_line(lines):
-	if len(lines[0]) == 1:
-		ys = [float(l[0]) for l in lines]
-		xs = range(0, len(ys))
-	else:
+	if args.xcoord:
+		if len(lines[0]) < 2:
+			sys.stderr.write("'line -x' requires multiple columns")
+			exit(1)
 		xs = [float(l[0]) for l in lines]
-		ys = [float(l[1]) for l in lines]
-	plt.plot(xs, ys)
+		cols = range(1, len(lines[0]))
+	else:
+		xs = range(0, len(lines))
+		cols = range(0, len(lines[0]))
+
+	for i, c in enumerate(cols):
+		ys = [float(l[c]) for l in lines]
+		label = args.legend[i] if args.legend is not None else None
+		color = args.colors[i % len(args.colors)]
+		if color is not None:
+			plt.plot(xs, ys, label=label, color=color)
+		else:
+			plt.plot(xs, ys, label=label)
+
+	if args.legend is not None:
+		plt.legend()
 
 # expects list of single values
 def plot_hist(lines):
@@ -39,9 +55,6 @@ def plot_bars(lines):
 	ngrps = len(values)
 	w = 0.8
 
-	args.colors = args.colors.split(',') if args.colors is not None else [None]
-	args.legend = args.legend.split(',') if args.legend is not None else None
-
 	for i in range(0, grpsize):
 		color = args.colors[i % len(args.colors)]
 		base = i*w/grpsize
@@ -56,7 +69,7 @@ def plot_bars(lines):
 		except ValueError:
 			sys.stderr.write("Bar plot error, perhaps '%s' is an invalid"
 			                 " color?\n" % color)
-			sys.exit(1)
+			exit(1)
 
 	plt.xticks([i + w/2 for i in range(0, len(lines))], labels,
 	           rotation=args.labelangle, rotation_mode="anchor",
@@ -101,6 +114,14 @@ def main():
 		lines = [l.split(',') for l in lines]
 	else:
 		lines = [l.split() for l in lines]
+
+	if hasattr(args, "colors"):
+		args.colors = args.colors.split(',') if args.colors is not None \
+			else [None]
+	if hasattr(args, "legend"):
+		args.legend = args.legend.split(',') if args.legend is not None \
+			else None
+
 	args.plotmode(lines)
 
 	if args.xlabel:
@@ -130,6 +151,8 @@ if __name__ == "__main__":
 	# python 2.7 doesn't support aliases in add_parser, sadly.
 	lineparser = subparsers.add_parser("line", help="draw line plot")
 	lineparser.set_defaults(plotmode=plot_line)
+	lineparser.add_argument('-x', "--xcoord", action="store_const", const=True,
+	                        default=False, help="use first column as X coordinates")
 
 	scatterparser = subparsers.add_parser("scatter", help="draw scatter plot")
 	scatterparser.set_defaults(plotmode=plot_scatter)
@@ -139,11 +162,13 @@ if __name__ == "__main__":
 
 	barparser = subparsers.add_parser("bar", help="draw bar chart")
 	barparser.set_defaults(plotmode=plot_bars)
-	barparser.add_argument('-c', "--colors", type=str,
-	                       help="color(s) of plotted bars, comma-separated")
 	barparser.add_argument('-r', "--angle", dest="labelangle", type=float,
 	                       help="label angle (degrees)", default=0.0)
-	barparser.add_argument('-L', "--legend", type=str, help="labels for legend")
+
+	for p in [lineparser, barparser]:
+		p.add_argument('-L', "--legend", type=str, help="labels for legend")
+		p.add_argument('-c', "--colors", type=str,
+		               help="color(s) of plotted bars/lines, comma-separated")
 
 	cdfparser = subparsers.add_parser("cdf", help="draw cumulative distribution")
 	cdfparser.set_defaults(plotmode=plot_cdf)
@@ -184,6 +209,6 @@ if __name__ == "__main__":
 
 	if not args.outfile and not getenv('DISPLAY'):
 		sys.stderr.write("No output file specified but DISPLAY not set\n")
-		sys.exit(1)
+		exit(1)
 
 	main()
