@@ -27,11 +27,16 @@ def plot_line(lines):
 	for i, c in enumerate(cols):
 		ys = [float(l[c]) for l in lines]
 		label = args.legend[i] if args.legend is not None else None
-		color = args.colors[i % len(args.colors)]
-		if color is not None:
-			plt.plot(xs, ys, label=label, color=color)
-		else:
-			plt.plot(xs, ys, label=label)
+
+		kw = {}
+		for a in ["colors", "markers", "linestyles"]:
+			arg = getattr(args, a)
+			if arg is not None:
+				v = arg[i % len(arg)]
+				# HACK.
+				kw[a[:-1]] = v
+
+		plt.plot(xs, ys, label=label, **kw)
 
 	if args.legend is not None:
 		plt.legend()
@@ -115,12 +120,10 @@ def main():
 	else:
 		lines = [l.split() for l in lines]
 
-	if hasattr(args, "colors"):
-		args.colors = args.colors.split(',') if args.colors is not None \
-			else [None]
-	if hasattr(args, "legend"):
-		args.legend = args.legend.split(',') if args.legend is not None \
-			else None
+	for a in ["legend", "colors", "markers", "linestyles"]:
+		if hasattr(args, a):
+			v = getattr(args, a)
+			setattr(args, a, v.split(',') if v is not None else None)
 
 	args.plotmode(lines)
 
@@ -153,6 +156,8 @@ if __name__ == "__main__":
 	lineparser.set_defaults(plotmode=plot_line)
 	lineparser.add_argument('-x', "--xcoord", action="store_const", const=True,
 	                        default=False, help="use first column as X coordinates")
+	lineparser.add_argument('-m', "--markers", type=str, help="marker styles")
+	lineparser.add_argument('-s', "--linestyles", type=str, help="line styles")
 
 	scatterparser = subparsers.add_parser("scatter", help="draw scatter plot")
 	scatterparser.set_defaults(plotmode=plot_scatter)
