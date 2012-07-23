@@ -61,7 +61,7 @@ def plot_bars(lines):
 	w = 0.8
 
 	for i in range(0, grpsize):
-		color = args.colors[i % len(args.colors)]
+		color = args.colors[i % len(args.colors)] if args.colors else None
 		base = i*w/grpsize
 		try:
 			label = args.legend[i]
