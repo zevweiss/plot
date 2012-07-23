@@ -39,7 +39,7 @@ def plot_line(lines):
 		plt.plot(xs, ys, label=label, **kw)
 
 	if args.legend is not None:
-		plt.legend()
+		plt.legend(loc=0)
 
 # expects list of single values
 def plot_hist(lines):
@@ -82,7 +82,7 @@ def plot_bars(lines):
 	plt.xlim(w-1, len(lines))
 
 	if args.legend is not None:
-		plt.legend()
+		plt.legend(loc=0)
 
 # expects a list of single values
 def plot_cdf(lines):
