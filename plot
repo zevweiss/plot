@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 import sys
 import argparse
 
+cmap = plt.cm.get_cmap()
+
 # By default, expects list of tuples of Y values.  With -x, the first
 # element of each tuple is instead interpreted as the X value for the
 # remaining Y values.
@@ -29,14 +31,15 @@ def plot_line(lines):
 		label = args.legend[i] if args.legend is not None else None
 
 		kw = {}
-		for a in ["colors", "markers", "linestyles"]:
+		for a in ["markers", "linestyles"]:
 			arg = getattr(args, a)
 			if arg is not None:
 				v = arg[i % len(arg)]
 				# HACK.
 				kw[a[:-1]] = v
 
-		plt.plot(xs, ys, label=label, **kw)
+		color = cmap(float(i) / float(max(len(cols), 2)-1))
+		plt.plot(xs, ys, label=label, color=color, **kw)
 
 	if args.legend is not None:
 		plt.legend(loc=0)
@@ -61,20 +64,15 @@ def plot_bars(lines):
 	w = 0.8
 
 	for i in range(0, grpsize):
-		color = args.colors[i % len(args.colors)] if args.colors else None
 		base = i*w/grpsize
 		try:
 			label = args.legend[i]
 		except:
 			label = None
 
-		try:
-			plt.bar(np.arange(base, ngrps+base), [v[i] for v in values],
-			        width=w/grpsize, color=color, label=label)
-		except ValueError:
-			sys.stderr.write("Bar plot error, perhaps '%s' is an invalid"
-			                 " color?\n" % color)
-			exit(1)
+		color = cmap(float(i) / float((max(grpsize, 2)-1)))
+		plt.bar(np.arange(base, ngrps+base), [v[i] for v in values],
+		        width=w/grpsize, label=label, color=color)
 
 	plt.xticks([i + w/2 for i in range(0, len(lines))], labels,
 	           rotation=args.labelangle, rotation_mode="anchor",
@@ -114,16 +112,28 @@ def plot_timechart(lines):
 	plt.yticks([x + 0.5 for x in xrange(0, len(idnums))], ids)
 
 def main():
+	global cmap
 	lines = sys.stdin.readlines()
 	if ',' in lines[0]:
 		lines = [l.split(',') for l in lines]
 	else:
 		lines = [l.split() for l in lines]
 
-	for a in ["legend", "colors", "markers", "linestyles"]:
+	for a in ["legend", "markers", "linestyles"]:
 		if hasattr(args, a):
 			v = getattr(args, a)
 			setattr(args, a, v.split(',') if v is not None else None)
+
+	if args.colormap is not None:
+		cmap = plt.cm.get_cmap(args.colormap)
+		if cmap is None:
+			sys.stderr.write("invalid colormap: %s\n" % args.colormap)
+			sys.stderr.write("Available colormaps:\n\t")
+			mapnames = (c for c in plt.cm.datad.keys())
+			forward = (n for n in mapnames if not n.endswith("_r"))
+			sys.stderr.write("\n\t".join(sorted(forward, key=str.lower)))
+			sys.stderr.write('\n')
+			exit(1)
 
 	args.plotmode(lines)
 
@@ -172,8 +182,6 @@ if __name__ == "__main__":
 
 	for p in [lineparser, barparser]:
 		p.add_argument('-L', "--legend", type=str, help="labels for legend")
-		p.add_argument('-c', "--colors", type=str,
-		               help="color(s) of plotted bars/lines, comma-separated")
 
 	cdfparser = subparsers.add_parser("cdf", help="draw cumulative distribution")
 	cdfparser.set_defaults(plotmode=plot_cdf)
@@ -196,6 +204,7 @@ if __name__ == "__main__":
 	            (('-x', "--xlabel"), dict(type=str, help="x-axis label")),
 	            (('-y', "--ylabel"), dict(type=str, help="y-axis label")),
 	            (('-Y', "--ylim"), dict(type=str, help="y-axis bounds")),
+	            (('-c', "--colormap"), dict(type=str, help="pyplot color map")),
 	            (('-o', "--outfile"),
 	             dict(type=str, help="file to save plot in (default none)")),
 	            (('-r', "--dpi"),
