@@ -148,6 +148,11 @@ def main():
 		ylo, yhi = [float(x) for x in args.ylim.split(',')]
 		plt.ylim(ylo, yhi)
 
+	# FIXME: code-dupe
+	if args.xlim is not None:
+		xlo, xhi = [float(x) for x in args.xlim.split(',')]
+		plt.xlim(xlo, xhi)
+
 	xgeom, ygeom = [float(s) for s in args.geometry.split(',')]
 	plt.gcf().set_size_inches(xgeom, ygeom, forward=True)
 
@@ -202,6 +207,7 @@ if __name__ == "__main__":
 
 	mainargs = [(('-t', "--title"), dict(type=str, help="plot title")),
 	            (('-x', "--xlabel"), dict(type=str, help="x-axis label")),
+	            (('-X', "--xlim"), dict(type=str, help="x-axis bounds")),
 	            (('-y', "--ylabel"), dict(type=str, help="y-axis label")),
 	            (('-Y', "--ylim"), dict(type=str, help="y-axis bounds")),
 	            (('-c', "--colormap"), dict(type=str, help="pyplot color map")),
