@@ -47,7 +47,7 @@ def plot_line(lines):
 # expects list of single values
 def plot_hist(lines):
 	vals = [float(x[0]) for x in lines]
-	plt.hist(vals, args.nbins, normed=args.norm)
+	plt.hist(vals, args.nbins, normed=args.norm, color=cmap(0.5))
 
 # expects list of (x, y) tuples
 def plot_scatter(lines):
