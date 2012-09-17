@@ -47,7 +47,12 @@ def plot_line(lines):
 # expects list of single values
 def plot_hist(lines):
 	vals = [float(x[0]) for x in lines]
-	plt.hist(vals, args.nbins, normed=args.norm, color=cmap(0.5))
+	if args.range is not None:
+		rlo, rhi = [float(x) for x in args.range.split(',')]
+		r = rlo, rhi
+	else:
+		r = None
+	plt.hist(vals, args.nbins, range=r, normed=args.norm, color=cmap(0.5))
 
 # expects list of (x, y) tuples
 def plot_scatter(lines):
@@ -85,7 +90,13 @@ def plot_bars(lines):
 # expects a list of single values
 def plot_cdf(lines):
 	vals = [float(x[0]) for x in lines]
-	plt.hist(vals, args.nbins, cumulative=True, histtype='step', normed=args.norm)
+	if args.range is not None:
+		rlo, rhi = [float(x) for x in args.range.split(',')]
+		r = rlo, rhi
+	else:
+		r = None
+	plt.hist(vals, args.nbins, range=r, cumulative=True, histtype='step',
+	         normed=args.norm)
 	plt.xlim(0, max(vals))
 	plt.ylim(0, 1 if args.norm else len(vals))
 
@@ -199,6 +210,8 @@ if __name__ == "__main__":
 		               default=15, help="number of bins (default 15)")
 		p.add_argument('-a', "--absolute", dest="norm", action="store_const",
 		               const=False, default=True, help="Don't normalize y-axis")
+		p.add_argument('-r', "--range", type=str, help="range of histogram bins"
+		               " (min,max)")
 
 	timechartparser.add_argument('-d', "--duration", action="store_const",
 	                             const=True, default=False, help="read data "
