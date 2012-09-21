@@ -179,7 +179,7 @@ def main():
 	plt.gcf().set_size_inches(xgeom, ygeom, forward=True)
 
 	if args.outfile:
-		plt.savefig(args.outfile, dpi=args.dpi)
+		plt.savefig(args.outfile, dpi=args.dpi, bbox_inches=args.bbox_inches)
 	else:
 		plt.show()
 
@@ -238,6 +238,9 @@ if __name__ == "__main__":
 	            (('-y', "--ylabel"), dict(type=str, help="y-axis label")),
 	            (('-Y', "--ylim"), dict(type=str, help="y-axis bounds")),
 	            (('-c', "--colormap"), dict(type=str, help="pyplot color map")),
+	            (('-T', "--tight"),
+	             dict(dest="bbox_inches", action="store_const", default=None,
+	                  const="tight", help="tight bounding box on output files")),
 	            (('-o', "--outfile"),
 	             dict(type=str, help="file to save plot in (default none)")),
 	            (('-r', "--dpi"),
