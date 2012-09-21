@@ -64,20 +64,31 @@ def plot_scatter(lines):
 def plot_bars(lines):
 	labels = [l[0] for l in lines]
 	values = [[float(x) for x in l[1:]] for l in lines]
-	grpsize = len(values[0])
-	ngrps = len(values)
+	ncols = len(values[0])
+	nrows = len(values)
 	w = 0.8
 
-	for i in range(0, grpsize):
-		base = i*w/grpsize
+	prevset = [0 for v in values]
+	for i in range(0, ncols):
+		if args.stack:
+			lefts = np.arange(0, nrows)
+		else:
+			base = i*w/ncols
+			lefts = np.arange(base, nrows+base)
+
 		try:
 			label = args.legend[i]
 		except:
 			label = None
 
-		color = cmap(float(i) / float((max(grpsize, 2)-1)))
-		plt.bar(np.arange(base, ngrps+base), [v[i] for v in values],
-		        width=w/grpsize, label=label, color=color)
+		color = cmap(float(i) / float((max(ncols, 2)-1)))
+		thisset = [v[i] for v in values]
+		width = w if args.stack else w/ncols
+		plt.bar(lefts, thisset, bottom=prevset, width=width, label=label,
+		        color=color)
+
+		if args.stack:
+			prevset = [x+y for x,y in zip(thisset, prevset)]
 
 	plt.xticks([i + w/2 for i in range(0, len(lines))], labels,
 	           rotation=args.labelangle, rotation_mode="anchor",
@@ -195,6 +206,9 @@ if __name__ == "__main__":
 	barparser.set_defaults(plotmode=plot_bars)
 	barparser.add_argument('-r', "--angle", dest="labelangle", type=float,
 	                       help="label angle (degrees)", default=0.0)
+	barparser.add_argument('-s', "--stack", action="store_const",
+	                       default=False, const=True, help="stack bars instead"
+	                       " of grouping them")
 
 	for p in [lineparser, barparser]:
 		p.add_argument('-L', "--legend", type=str, help="labels for legend")
