@@ -108,6 +108,8 @@ def plot_cdf(lines):
 		r = None
 	plt.hist(vals, args.nbins, range=r, cumulative=True, histtype='step',
 	         normed=args.norm)
+	if args.log:
+		plt.xscale('log')
 	plt.xlim(0, max(vals))
 	plt.ylim(0, 1 if args.norm else len(vals))
 
@@ -224,6 +226,8 @@ if __name__ == "__main__":
 		               default=15, help="number of bins (default 15)")
 		p.add_argument('-a', "--absolute", dest="norm", action="store_const",
 		               const=False, default=True, help="Don't normalize y-axis")
+		p.add_argument('-l', "--log", action="store_const",
+		               default=False, const=True, help="logarithmic histogram")
 		p.add_argument('-r', "--range", type=str, help="range of histogram bins"
 		               " (min,max)")
 
