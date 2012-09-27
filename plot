@@ -168,6 +168,11 @@ def main():
 	if args.title:
 		plt.title(args.title)
 
+	if args.logx:
+		plt.xscale('log')
+	if args.logy:
+		plt.yscale('log')
+
 	if args.ylim is not None:
 		ylo, yhi = [float(x) for x in args.ylim.split(',')]
 		plt.ylim(ylo, yhi)
@@ -252,6 +257,12 @@ if __name__ == "__main__":
 	            (('-g', "--geometry"),
 	             dict(type=str, default="8,6",
 	                  help="figure geometry in X,Y format (inches)")),
+	            (('-A', "--logx"),
+	             dict(action="store_const", const=True, default=False,
+	                  help="use logarithmic X axis")),
+	            (('-B', "--logy"),
+	             dict(action="store_const", const=True, default=False,
+	                  help="use logarithmic Y axis")),
 	            (('-l', "--live"),
 	             dict(action="store_const", const=True, default=False,
 	                  help="update plot as data appears"))]
