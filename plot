@@ -137,7 +137,7 @@ def plot_timechart(lines):
 
 def main():
 	global cmap
-	lines = sys.stdin.readlines()
+	lines = [l for l in sys.stdin.readlines() if l[0] != '#']
 	if ',' in lines[0]:
 		lines = [l.split(',') for l in lines]
 	else:
