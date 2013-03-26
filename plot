@@ -44,9 +44,13 @@ def plot_line(lines):
 	if args.legend is not None:
 		plt.legend(loc=0)
 
+def percentile(vals, pct):
+	num = min(int((pct/100.0) * len(vals)), len(vals))
+	return sorted(vals)[:num]
+
 # expects list of single values
 def plot_hist(lines):
-	vals = [float(x[0]) for x in lines]
+	vals = percentile([float(x[0]) for x in lines], args.percentile)
 	if args.range is not None:
 		rlo, rhi = [float(x) for x in args.range.split(',')]
 		r = rlo, rhi
@@ -235,6 +239,8 @@ if __name__ == "__main__":
 		               default=False, const=True, help="logarithmic histogram")
 		p.add_argument('-r', "--range", type=str, help="range of histogram bins"
 		               " (min,max)")
+		p.add_argument('-p', "--percentile", type=float,  metavar="PCT",
+		               default=100.0, help="ignore datapoints beyond PCT percentile")
 
 	timechartparser.add_argument('-d', "--duration", action="store_const",
 	                             const=True, default=False, help="read data "
