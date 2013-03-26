@@ -58,6 +58,36 @@ def plot_hist(lines):
 		r = None
 	plt.hist(vals, args.nbins, range=r, normed=args.norm, color=cmap(0.5))
 
+# expects a list of sets of values
+# FIXME: support different-length columns
+def plot_cdf(lines):
+	maxes = []
+
+	if args.range is not None:
+		rlo, rhi = [float(x) for x in args.range.split(',')]
+		r = rlo, rhi
+	else:
+		r = None
+
+	for i in range(len(lines[0])):
+		vals = percentile([float(x[i]) for x in lines], args.percentile)
+		maxes.append(max(vals))
+
+		try:
+			label = args.legend[i]
+		except:
+			label = None
+
+		plt.hist(vals, args.nbins, range=r, cumulative=True, histtype='step',
+		         normed=args.norm, label=label)
+
+	if args.log:
+		plt.xscale('log')
+	plt.xlim(0, max(maxes))
+	plt.ylim(0, 1 if args.norm else len(vals))
+	if args.legend is not None:
+		plt.legend()
+
 # expects list of (x, y) tuples
 def plot_scatter(lines):
 	xs = [float(l[0]) for l in lines]
@@ -101,21 +131,6 @@ def plot_bars(lines):
 
 	if args.legend is not None:
 		plt.legend(loc=0)
-
-# expects a list of single values
-def plot_cdf(lines):
-	vals = [float(x[0]) for x in lines]
-	if args.range is not None:
-		rlo, rhi = [float(x) for x in args.range.split(',')]
-		r = rlo, rhi
-	else:
-		r = None
-	plt.hist(vals, args.nbins, range=r, cumulative=True, histtype='step',
-	         normed=args.norm)
-	if args.log:
-		plt.xscale('log')
-	plt.xlim(0, max(vals))
-	plt.ylim(0, 1 if args.norm else len(vals))
 
 # expects list of (label, start, end) tuples
 def plot_timechart(lines):
@@ -221,14 +236,14 @@ if __name__ == "__main__":
 	                       default=False, const=True, help="stack bars instead"
 	                       " of grouping them")
 
-	for p in [lineparser, barparser]:
-		p.add_argument('-L', "--legend", type=str, help="labels for legend")
-
 	cdfparser = subparsers.add_parser("cdf", help="draw cumulative distribution")
 	cdfparser.set_defaults(plotmode=plot_cdf)
 
 	timechartparser = subparsers.add_parser("tc", help="draw timechart")
 	timechartparser.set_defaults(plotmode=plot_timechart)
+
+	for p in [lineparser, barparser, cdfparser]:
+		p.add_argument('-L', "--legend", type=str, help="labels for legend")
 
 	for p in [histparser, cdfparser]:
 		p.add_argument('-b', "--bins", dest="nbins", type=int, metavar="NBINS",
