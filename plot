@@ -154,6 +154,32 @@ def plot_timechart(lines):
 
 	plt.yticks([x + 0.5 for x in xrange(0, len(idnums))], ids)
 
+def plot_heatmap(lines):
+	if args.autolabel:
+		labels = [l[0] for l in lines]
+		values = np.array([[float(f) for f in l[1:]] for l in lines])
+	else:
+		values = np.array([[float(f) for f in l] for l in lines])
+
+	xlen = len(values[0])
+
+	pc = plt.pcolor(values, cmap=cmap)
+	if args.autolabel:
+		plt.yticks(np.arange(len(labels))+0.5, labels)
+
+	if args.xlabels is not None:
+		plt.xticks(np.arange(xlen)+0.5, args.xlabels.split(','),
+		           rotation=args.labelangle, rotation_mode="anchor",
+		           ha=["center", "right", "left"][cmp(args.labelangle, 0.0)])
+
+	plt.xlim(0, xlen)
+	plt.ylim(0, len(values))
+
+	if args.drawlegend:
+		cb = plt.colorbar()
+		if (args.cblabel):
+			cb.set_label(args.cblabel)
+
 def main():
 	global cmap
 	lines = [l for l in sys.stdin.readlines() if l[0] != '#']
@@ -230,8 +256,6 @@ if __name__ == "__main__":
 
 	barparser = subparsers.add_parser("bar", help="draw bar chart")
 	barparser.set_defaults(plotmode=plot_bars)
-	barparser.add_argument('-r', "--angle", dest="labelangle", type=float,
-	                       help="label angle (degrees)", default=0.0)
 	barparser.add_argument('-s', "--stack", action="store_const",
 	                       default=False, const=True, help="stack bars instead"
 	                       " of grouping them")
@@ -241,6 +265,20 @@ if __name__ == "__main__":
 
 	timechartparser = subparsers.add_parser("tc", help="draw timechart")
 	timechartparser.set_defaults(plotmode=plot_timechart)
+
+	heatmapparser = subparsers.add_parser("heatmap", help="draw heat map")
+	heatmapparser.set_defaults(plotmode=plot_heatmap)
+	heatmapparser.add_argument('-l', "--autolabel", action="store_const",
+	                           default=False, const=True, help="use first column"
+	                           " as Y-axis labels")
+	heatmapparser.add_argument('-X', "--xlabels", type=str, help="X-axis labels")
+	heatmapparser.add_argument('-L', "--drawlegend", action="store_const",
+	                           default=False, const=True, help="draw legend")
+	heatmapparser.add_argument('-Z', "--cblabel", type=str, help="colorbar label")
+
+	for p in [barparser, heatmapparser]:
+		p.add_argument('-r', "--angle", dest="labelangle", type=float,
+		               help="X-axis label angle (degrees)", default=0.0)
 
 	for p in [lineparser, barparser, cdfparser]:
 		p.add_argument('-L', "--legend", type=str, help="labels for legend")
