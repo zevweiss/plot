@@ -40,13 +40,11 @@ Cumulative distribution of word length
 
 ## TODO
 
-- Multi-dataset support
-
-- Label support (e.g. flag to read first line as list of labels)
-
 - pyplot kwargs in command-line arguments
 
 - Logarithmic axes
+
+- Generate-a-script mode, i.e. output python code to make the plot (for hand editing)
 
 ## Author
 
