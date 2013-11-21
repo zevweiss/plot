@@ -78,6 +78,12 @@ def plot_line(lines):
 				xd = np.append(xd, newx)
 				yd = np.append(yd, float(d))
 
+				if args.history > 0:
+					if len(xd) > args.history:
+						xd = xd[-args.history:]
+					if len(yd) > args.history:
+						yd = yd[-args.history:]
+
 				xmax = max(xmax, max(xd))
 				ymax = max(ymax, max(yd))
 
@@ -393,7 +399,9 @@ if __name__ == "__main__":
 	                  help="use logarithmic Y axis")),
 	            (('-l', "--live"),
 	             dict(action="store_const", const=True, default=False,
-	                  help="update plot as data appears"))]
+	                  help="update plot as data appears")),
+	            (('-H', "--history"),
+	             dict(type=int, default=0, help="number of samples to retain in live mode"))]
 
 	for args, kwargs in mainargs:
 		mainparser.add_argument(*args, **kwargs)
