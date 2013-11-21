@@ -6,16 +6,23 @@ from os import getenv
 if not getenv('DISPLAY'):
 	matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 
 import sys
+import time
 import argparse
 
 cmap = plt.cm.get_cmap()
+
+anim = None
+start_time = None
+splitfn = None
 
 # By default, expects list of tuples of Y values.  With -x, the first
 # element of each tuple is instead interpreted as the X value for the
 # remaining Y values.
 def plot_line(lines):
+	global anim
 	if args.xcoord:
 		if len(lines[0]) < 2:
 			sys.stderr.write("'line -x' requires multiple columns")
@@ -26,6 +33,7 @@ def plot_line(lines):
 		xs = range(0, len(lines))
 		cols = range(0, len(lines[0]))
 
+	plotlines = []
 	for i, c in enumerate(cols):
 		ys = [float(l[c]) for l in lines]
 		label = args.legend[i] if args.legend is not None else None
@@ -39,10 +47,51 @@ def plot_line(lines):
 				kw[a[:-1]] = v
 
 		color = cmap(float(i) / float(max(len(cols), 2)-1))
-		plt.plot(xs, ys, label=label, color=color, **kw)
+		plotlines += plt.plot(xs, ys, label=label, color=color, **kw)
 
 	if args.legend is not None:
 		plt.legend(loc=0)
+
+	if args.live:
+		def update_plot(i, lines):
+			global start_time
+			s = get_inputline()
+			newdata = splitfn(s)
+
+			if args.xcoord:
+				newx = float(newdata[0])
+				newdata = newdata[1:]
+			else:
+				newx = time.time() - start_time
+
+			if len(newdata) != len(lines):
+				sys.stderr.write("got %d data points, expected %d; "
+				                 "discarding line: '%s'\n"
+				                 % (len(newdata), len(lines), s))
+				return lines
+
+			xmax, ymax = 0, 0
+
+			for pl, d in zip(lines, newdata):
+				xd, yd = pl.get_data()
+
+				xd = np.append(xd, newx)
+				yd = np.append(yd, float(d))
+
+				xmax = max(xmax, max(xd))
+				ymax = max(ymax, max(yd))
+
+				pl.set_data([xd, yd])
+
+			plt.xlim(xd[0], xmax)
+			plt.ylim(0, 1.1 * ymax)
+			plt.draw()
+
+			return lines
+		# interval=1 here is to sidestep a bug in MPL (should
+		# be zero); looks like a teardown race condition
+		anim = animation.FuncAnimation(fig=plt.gcf(), func=update_plot, frames=50,
+		                               interval=1, fargs=(plotlines,), blit=True)
 
 def percentile(vals, pct):
 	num = min(int((pct/100.0) * len(vals)), len(vals))
@@ -194,9 +243,10 @@ def get_input():
 		yield s
 
 def main():
-	global cmap
+	global cmap, start_time, splitfn
 	if args.live:
 		lines = [get_inputline()]
+		start_time = time.time()
 	else:
 		lines = list(get_input())
 
@@ -248,17 +298,6 @@ def main():
 
 	xgeom, ygeom = [float(s) for s in args.geometry.split(',')]
 	plt.gcf().set_size_inches(xgeom, ygeom, forward=True)
-
-	if args.live:
-		plt.ion()
-		plt.draw()
-		while True:
-			newline = sys.stdin.readline()
-			if newline == '':
-				return
-			lines.append(splitfn(newline))
-			args.plotmode(lines)
-			plt.draw()
 
 	if args.outfile:
 		plt.savefig(args.outfile, dpi=args.dpi, bbox_inches=args.bbox_inches)
