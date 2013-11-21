@@ -305,6 +305,9 @@ def main():
 	xgeom, ygeom = [float(s) for s in args.geometry.split(',')]
 	plt.gcf().set_size_inches(xgeom, ygeom, forward=True)
 
+	if args.window_title:
+		plt.gcf().canvas.set_window_title(args.window_title)
+
 	if args.outfile:
 		plt.savefig(args.outfile, dpi=args.dpi, bbox_inches=args.bbox_inches)
 	else:
@@ -401,7 +404,9 @@ if __name__ == "__main__":
 	             dict(action="store_const", const=True, default=False,
 	                  help="update plot as data appears")),
 	            (('-H', "--history"),
-	             dict(type=int, default=0, help="number of samples to retain in live mode"))]
+	             dict(type=int, default=0, help="number of samples to retain in live mode")),
+	            (('-W', "--window-title"),
+	             dict(type=str, default=None, help="title of plot window"))]
 
 	for args, kwargs in mainargs:
 		mainparser.add_argument(*args, **kwargs)
