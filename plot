@@ -90,7 +90,7 @@ def plot_line(lines):
 				pl.set_data([xd, yd])
 
 			plt.xlim(xd[0], xmax)
-			plt.ylim(0, 1.1 * ymax)
+			plt.ylim(0, (1.1 * ymax) if ymax != 0.0 else 1)
 			plt.draw()
 
 			return lines
