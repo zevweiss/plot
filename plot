@@ -145,9 +145,26 @@ def plot_cdf(lines):
 
 # expects list of (x, y) tuples
 def plot_scatter(lines):
+	global anim
 	xs = [float(l[0]) for l in lines]
 	ys = [float(l[1]) for l in lines]
 	plt.scatter(xs, ys, marker='x')
+
+	if args.live:
+		def update_plot(i):
+			s = get_inputline()
+			coords = splitfn(s)
+
+			if len(coords) != 2:
+				sys.stderr.write("got %d fields, expected 2; "
+				                 "discarding line: '%s'\n"
+				                 % (len(coords), s))
+
+			x, y = [float(f) for f in coords]
+			plt.scatter([x], [y], marker='x')
+
+		anim = animation.FuncAnimation(fig=plt.gcf(), func=update_plot, frames=50,
+		                               interval=1)
 
 # expects list of (label, value) pairs
 def plot_bars(lines):
