@@ -23,19 +23,31 @@ splitfn = None
 # remaining Y values.
 def plot_line(lines):
 	global anim
-	if args.xcoord:
+
+	if args.xypairs and args.xcoord:
+		sys.stderr.write("-x and -X conflict for 'line'")
+		exit(1)
+
+	if args.xypairs:
+		if len(lines[0]) < 2 or len(lines[0]) % 2 != 0:
+			sys.stderr.write("input malformed for 'line -X'")
+			exit(1)
+		odds = [i for i in range(0, len(lines[0])) if i % 2 == 1]
+		evens = [i for i in range(0, len(lines[0])) if i % 2 == 0]
+		allxs = [[float(l[i]) for l in lines] for i in evens]
+		allys = [[float(l[i]) for l in lines] for i in odds]
+	elif args.xcoord:
 		if len(lines[0]) < 2:
 			sys.stderr.write("'line -x' requires multiple columns")
 			exit(1)
-		xs = [float(l[0]) for l in lines]
-		cols = range(1, len(lines[0]))
+		allxs = [[float(l[0]) for l in lines]] * (len(lines[0]) - 1)
+		allys = [[float(l[c]) for l in lines] for c in range(1, len(lines[0]))]
 	else:
-		xs = range(0, len(lines))
-		cols = range(0, len(lines[0]))
+		allxs = [list(range(0, len(lines)))] * len(lines[0])
+		allys = [[float(l[c]) for l in lines] for c in range(0, len(lines[0]))]
 
 	plotlines = []
-	for i, c in enumerate(cols):
-		ys = [float(l[c]) for l in lines]
+	for i, (xs, ys) in enumerate(zip(allxs, allys)):
 		label = args.legend[i] if args.legend is not None else None
 
 		kw = {}
@@ -46,7 +58,7 @@ def plot_line(lines):
 				# HACK.
 				kw[a[:-1]] = v
 
-		color = cmap(float(i) / float(max(len(cols), 2)-1))
+		color = cmap(float(i) / float(max(len(allys), 2)-1))
 		plotlines += plt.plot(xs, ys, label=label, color=color, **kw)
 
 	if args.legend is not None:
@@ -323,6 +335,9 @@ if __name__ == "__main__":
 	lineparser.set_defaults(plotmode=plot_line)
 	lineparser.add_argument('-x', "--xcoord", action="store_const", const=True,
 	                        default=False, help="use first column as X coordinates")
+	lineparser.add_argument('-X', "--xypairs", action="store_const", const=True,
+	                        default=False, help="use even columns as X coordinates, "
+	                        "odd columns as Y")
 	lineparser.add_argument('-m', "--markers", type=str, help="marker styles")
 	lineparser.add_argument('-s', "--linestyles", type=str, help="line styles")
 
