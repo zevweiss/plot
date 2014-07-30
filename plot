@@ -234,7 +234,7 @@ def plot_timechart(lines):
 				end = float(p[2])
 				diff = end-start
 			xdims.append((start, diff))
-		plt.broken_barh(xdims, ydim, alpha=0.5)
+		plt.broken_barh(xdims, ydim, alpha=args.alpha)
 
 	plt.yticks([x + 0.5 for x in xrange(0, len(idnums))], ids)
 
@@ -375,6 +375,8 @@ if __name__ == "__main__":
 
 	timechartparser = subparsers.add_parser("tc", help="draw timechart")
 	timechartparser.set_defaults(plotmode=plot_timechart)
+	timechartparser.add_argument('-a', "--alpha", type=float,
+				     help="opacity of timespan blocks")
 
 	heatmapparser = subparsers.add_parser("heatmap", help="draw heat map")
 	heatmapparser.set_defaults(plotmode=plot_heatmap)
