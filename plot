@@ -323,13 +323,19 @@ def main():
 		plt.yscale('log')
 
 	if args.ylim is not None:
-		ylo, yhi = [float(x) for x in args.ylim.split(',')]
-		plt.ylim(ylo, yhi)
+		ylo, yhi = args.ylim.split(',')
+		if ylo != '':
+			plt.ylim(ymin=float(ylo))
+		if yhi != '':
+			plt.ylim(ymax=float(yhi))
 
 	# FIXME: code-dupe
 	if args.xlim is not None:
-		xlo, xhi = [float(x) for x in args.xlim.split(',')]
-		plt.xlim(xlo, xhi)
+		xlo, xhi = args.xlim.split(',')
+		if xlo != '':
+			plt.xlim(xmin=float(xlo))
+		if xhi != '':
+			plt.xlim(xmax=float(xhi))
 
 	xgeom, ygeom = [float(s) for s in args.geometry.split(',')]
 	plt.gcf().set_size_inches(xgeom, ygeom, forward=True)
