@@ -18,6 +18,8 @@ anim = None
 start_time = None
 splitfn = None
 
+plot_ymin = plot_ymax = plot_xmin = plot_xmax = None
+
 # By default, expects list of tuples of Y values.  With -x, the first
 # element of each tuple is instead interpreted as the X value for the
 # remaining Y values.
@@ -202,8 +204,16 @@ def plot_bars(lines):
 		color = cmap(float(i) / float((max(ncols, 2)-1)))
 		thisset = [v[i] for v in values]
 		width = w if args.stack else w/ncols
-		plt.bar(lefts, thisset, bottom=prevset, width=width, label=label,
-		        color=color)
+		bars = plt.bar(lefts, thisset, bottom=prevset, width=width, label=label,
+		               color=color)
+
+		if args.numbers:
+			for b, v in zip(bars, thisset):
+				xpos = b.get_x() + (b.get_width() / 2)
+				ypos = b.get_height()
+				if plot_ymax is not None:
+					ypos = min(ypos, plot_ymax)
+				plt.text(xpos, ypos, str(int(round(v))), ha="center", va="bottom")
 
 		if args.stack:
 			prevset = [x+y for x,y in zip(thisset, prevset)]
@@ -277,8 +287,16 @@ def get_input():
 			break
 		yield s
 
+def parse_bounds(s):
+	if s is None:
+		return (None, None)
+	lo, hi = s.split(',')
+	lo = None if lo == '' else float(lo)
+	hi = None if hi == '' else float(hi)
+	return (lo, hi)
+
 def main():
-	global cmap, start_time, splitfn
+	global cmap, start_time, splitfn, plot_ymin, plot_ymax, plot_xmin, plot_xmax
 	if args.live:
 		lines = [get_inputline()]
 		start_time = time.time()
@@ -308,6 +326,9 @@ def main():
 			sys.stderr.write('\n')
 			exit(1)
 
+	plot_ymin, plot_ymax = parse_bounds(args.ylim)
+	plot_xmin, plot_xmax = parse_bounds(args.xlim)
+
 	args.plotmode(lines)
 
 	if args.xlabel:
@@ -322,20 +343,8 @@ def main():
 	if args.logy:
 		plt.yscale('log')
 
-	if args.ylim is not None:
-		ylo, yhi = args.ylim.split(',')
-		if ylo != '':
-			plt.ylim(ymin=float(ylo))
-		if yhi != '':
-			plt.ylim(ymax=float(yhi))
-
-	# FIXME: code-dupe
-	if args.xlim is not None:
-		xlo, xhi = args.xlim.split(',')
-		if xlo != '':
-			plt.xlim(xmin=float(xlo))
-		if xhi != '':
-			plt.xlim(xmax=float(xhi))
+	plt.ylim(plot_ymin, plot_ymax)
+	plt.xlim(plot_xmin, plot_xmax)
 
 	xgeom, ygeom = [float(s) for s in args.geometry.split(',')]
 	plt.gcf().set_size_inches(xgeom, ygeom, forward=True)
@@ -417,6 +426,9 @@ if __name__ == "__main__":
 	                             const=True, default=False, help="read data "
 	                             "items as (label, start, length) instead of "
 	                             "default (label, start, end)")
+
+	barparser.add_argument('-n', "--numbers", action="store_const", const=True,
+			       default=False, help="show numeric values on top of each bar")
 
 	mainargs = [(('-t', "--title"), dict(type=str, help="plot title")),
 	            (('-x', "--xlabel"), dict(type=str, help="x-axis label")),
