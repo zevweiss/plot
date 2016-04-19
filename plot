@@ -6,7 +6,6 @@ from os import getenv
 if not getenv('DISPLAY'):
 	matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 
 import sys
 import time
@@ -19,6 +18,8 @@ start_time = None
 splitfn = None
 
 plot_ymin = plot_ymax = plot_xmin = plot_xmax = None
+
+animation = None
 
 # By default, expects list of tuples of Y values.  With -x, the first
 # element of each tuple is instead interpreted as the X value for the
@@ -298,6 +299,8 @@ def parse_bounds(s):
 def main():
 	global cmap, start_time, splitfn, plot_ymin, plot_ymax, plot_xmin, plot_xmax
 	if args.live:
+		global animation
+		import matplotlib.animation as animation
 		lines = [get_inputline()]
 		start_time = time.time()
 	else:
