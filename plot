@@ -351,6 +351,7 @@ def main():
 
 	xgeom, ygeom = [float(s) for s in args.geometry.split(',')]
 	plt.gcf().set_size_inches(xgeom, ygeom, forward=True)
+	plt.gca().set_axis_bgcolor(args.background)
 
 	if args.window_title:
 		plt.gcf().canvas.set_window_title(args.window_title)
@@ -438,6 +439,8 @@ if __name__ == "__main__":
 	            (('-X', "--xlim"), dict(type=str, help="x-axis bounds")),
 	            (('-y', "--ylabel"), dict(type=str, help="y-axis label")),
 	            (('-Y', "--ylim"), dict(type=str, help="y-axis bounds")),
+		    (('-b', "--background"), dict(type=str, help="background color",
+						  default="white")),
 	            (('-c', "--colormap"), dict(type=str, help="pyplot color map")),
 	            (('-T', "--tight"),
 	             dict(dest="bbox_inches", action="store_const", default=None,
