@@ -275,6 +275,13 @@ def plot_heatmap(lines):
 		if (args.cblabel):
 			cb.set_label(args.cblabel)
 
+# expects small(ish?) set of lines, each of which will be plotted as a
+# violin representing the datapoints on that line
+def plot_violin(lines):
+	values = [[float(x) for x in l] for l in lines]
+	plt.violinplot(values, showmedians=args.medians, showmeans=args.means, showextrema=args.extrema,
+		       vert=not args.horizontal)
+
 def get_inputline():
 	while True:
 		s = sys.stdin.readline()
@@ -406,6 +413,13 @@ if __name__ == "__main__":
 	heatmapparser.add_argument('-L', "--drawlegend", action="store_const",
 	                           default=False, const=True, help="draw legend")
 	heatmapparser.add_argument('-Z', "--cblabel", type=str, help="colorbar label")
+
+	violinparser = subparsers.add_parser("violin", help="draw violin plot")
+	violinparser.set_defaults(plotmode=plot_violin)
+	violinparser.add_argument('-d', "--medians", action='store_true', help="show medians")
+	violinparser.add_argument('-n', "--means", action='store_true', help="show means")
+	violinparser.add_argument('-a', "--extrema", action='store_true', help="show extrema")
+	violinparser.add_argument('-H', "--horizontal", action='store_true', help="create horizontal plot")
 
 	for p in [barparser, heatmapparser]:
 		p.add_argument('-r', "--angle", dest="labelangle", type=float,
