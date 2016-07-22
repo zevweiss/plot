@@ -24,6 +24,10 @@ can be whitespace- or comma-separated.
 
 - Timechart (`tc`): expects (label,start,end) or (label,start,length) tuples
 
+- Heatmaps (`heatmap`): expects equal-length multi-value lines forming a 2D array
+
+- Violin plots (`violin`): expects multi-value lines
+
 ## Examples
 
 To show a 20-binned histogram of git commit frequency:
@@ -49,4 +53,4 @@ Cumulative distribution of word length
 ## Author
 
 Zev Weiss
-<zevweiss@gmail.com>
+<zev@bewilderbeest.net>
