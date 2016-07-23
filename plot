@@ -336,6 +336,11 @@ def do_plot():
 	plt.xlim(*args.xlim)
 	plt.ylim(*args.ylim)
 
+	if args.hline:
+		plt.hlines(args.hline, *plt.xlim())
+	if args.vline:
+		plt.vlines(args.vline, *plt.ylim())
+
 	plt.gcf().set_size_inches(*args.geometry, forward=True)
 	plt.gca().set_axis_bgcolor(args.background)
 
@@ -471,6 +476,10 @@ def main():
 	            boolarg('l', "live", "update plot as data appears"),
 	            arg('H', "history", "number of samples to retain in live mode", type=int,
 	                default=0),
+	            arg(None, "hline", "Y-positions of horizontal lines to draw across plot",
+	                type=listparser(float), metavar="Y1[,Y2...]"),
+	            arg(None, "vline", "X-positions of vertical lines to draw across plot",
+	                type=listparser(float), metavar="X1[,X2...]"),
 	            arg('W', "window-title", "title of plot window", metavar="TITLE")]
 
 	add_args(mainparser, mainargs)
