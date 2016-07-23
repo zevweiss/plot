@@ -355,7 +355,8 @@ def do_plot():
 def main():
 	mainparser = argparse.ArgumentParser(description="plot data from stdin")
 
-	subparsers = mainparser.add_subparsers()
+	subparsers = mainparser.add_subparsers(description="Available plot types:",
+					       metavar="PLOTTYPE")
 
 	# Add args to parser -- args is a list of (base, opt) tuples, where base
 	# is a (shortopt, longopt, help) tuple and opt is a dict of add_argument()
