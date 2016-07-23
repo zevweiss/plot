@@ -280,7 +280,7 @@ def plot_heatmap(lines):
 def plot_violin(lines):
 	values = [[float(x) for x in l] for l in lines]
 	plt.violinplot(values, showmedians=args.medians, showmeans=args.means, showextrema=args.extrema,
-		       vert=not args.horizontal)
+	               vert=not args.horizontal)
 
 def get_inputline():
 	while True:
@@ -303,7 +303,7 @@ def parse_bounds(s):
 	hi = None if hi == '' else float(hi)
 	return (lo, hi)
 
-def main():
+def do_plot():
 	global cmap, start_time, splitfn, plot_ymin, plot_ymax, plot_xmin, plot_xmax
 	if args.live:
 		global animation
@@ -368,118 +368,115 @@ def main():
 	else:
 		plt.show()
 
-if __name__ == "__main__":
+def main():
 	mainparser = argparse.ArgumentParser(description="plot data from stdin")
 
 	subparsers = mainparser.add_subparsers()
 
-	# python 2.7 doesn't support aliases in add_parser, sadly.
-	lineparser = subparsers.add_parser("line", help="draw line plot")
-	lineparser.set_defaults(plotmode=plot_line)
-	lineparser.add_argument('-x', "--xcoord", action="store_true",
-				help="use first column as X coordinates")
-	lineparser.add_argument('-X', "--xypairs", action="store_true",
-				help="use even columns as X coordinates, odd columns as Y")
-	lineparser.add_argument('-m', "--markers", type=str, help="marker styles")
-	lineparser.add_argument('-s', "--linestyles", type=str, help="line styles")
+	# Add args to parser -- args is a list of (base, opt) tuples, where base
+	# is a (shortopt, longopt, help) tuple and opt is a dict of add_argument()
+	# kwargs.
+	def add_args(parser, args):
+		for base, opt in args:
+			s, l, h = base
+			parser.add_argument('-'+s, "--"+l, help=h, **opt)
 
-	scatterparser = subparsers.add_parser("scatter", help="draw scatter plot")
-	scatterparser.set_defaults(plotmode=plot_scatter)
+	# helper to create one of the above tuples
+	def arg(s, l, h, **kwargs):
+		return ((s, l, h), kwargs)
 
-	histparser = subparsers.add_parser("hist", help="draw histogram")
-	histparser.set_defaults(plotmode=plot_hist)
+	# further helper for the common boolean case
+	def boolarg(s, l, h, **kwargs):
+		return arg(s, l, h, action="store_true", **kwargs)
 
-	barparser = subparsers.add_parser("bar", help="draw bar chart")
-	barparser.set_defaults(plotmode=plot_bars)
-	barparser.add_argument('-s', "--stack", action="store_true",
-			       help="stack bars instead of grouping them")
+	def add_subcmd(cmd, func, desc, args=[]):
+		# python 2.7 doesn't support aliases in add_parser, sadly.
+		parser = subparsers.add_parser(cmd, help=desc)
+		parser.set_defaults(plotmode=func)
+		add_args(parser, args)
+		return parser
 
-	cdfparser = subparsers.add_parser("cdf", help="draw cumulative distribution")
-	cdfparser.set_defaults(plotmode=plot_cdf)
+	line = add_subcmd("line", plot_line, "draw line plot",
+	                  [boolarg('x', "xcoord", "use first column as X coordinates"),
+	                   boolarg('X', "xypairs", "use even columns as X coordinates, odd columns as Y"),
+	                   arg('m', "markers", "marker styles"),
+	                   arg('s', "linestyles", "line styles")])
 
-	timechartparser = subparsers.add_parser("tc", help="draw timechart")
-	timechartparser.set_defaults(plotmode=plot_timechart)
-	timechartparser.add_argument('-a', "--alpha", type=float,
-				     help="opacity of timespan blocks")
+	scatter = add_subcmd("scatter", plot_scatter, "draw scatter plot")
 
-	heatmapparser = subparsers.add_parser("heatmap", help="draw heat map")
-	heatmapparser.set_defaults(plotmode=plot_heatmap)
-	heatmapparser.add_argument('-l', "--autolabel", action="store_true",
-				   help="use first column as Y-axis labels")
-	heatmapparser.add_argument('-X', "--xlabels", type=str, help="X-axis labels")
-	heatmapparser.add_argument('-L', "--drawlegend", action="store_true", help="draw legend")
-	heatmapparser.add_argument('-Z', "--cblabel", type=str, help="colorbar label")
+	hist = add_subcmd("hist", plot_hist, "draw histogram")
 
-	violinparser = subparsers.add_parser("violin", help="draw violin plot")
-	violinparser.set_defaults(plotmode=plot_violin)
-	violinparser.add_argument('-d', "--medians", action='store_true', help="show medians")
-	violinparser.add_argument('-n', "--means", action='store_true', help="show means")
-	violinparser.add_argument('-a', "--extrema", action='store_true', help="show extrema")
-	violinparser.add_argument('-H', "--horizontal", action='store_true', help="create horizontal plot")
+	bar = add_subcmd("bar", plot_bars, "draw bar chart",
+	                 [boolarg('s', "stack", "stack bars instead of grouping them"),
+	                  boolarg('n', "numbers", "show numeric values on top of each bar")])
 
-	for p in [barparser, heatmapparser]:
-		p.add_argument('-r', "--angle", dest="labelangle", type=float,
-		               help="X-axis label angle (degrees)", default=0.0)
+	cdf = add_subcmd("cdf", plot_cdf, "draw cumulative distribution")
 
-	for p in [lineparser, barparser, cdfparser]:
-		p.add_argument('-L', "--legend", type=str, help="labels for legend")
+	tc = add_subcmd("tc", plot_timechart, "draw timechart",
+	                [arg('a', "alpha", "opacity of timespan blocks", type=float),
+	                 boolarg('d', "duration", "read data items as (label, start, length)"
+	                         " instead of default (label, start, end)")])
 
-	for p in [histparser, cdfparser]:
-		p.add_argument('-b', "--bins", dest="nbins", type=int, metavar="NBINS",
-		               default=15, help="number of bins (default 15)")
-		p.add_argument('-a', "--absolute", dest="norm", action="store_true",
-			       help="Don't normalize y-axis")
-		p.add_argument('-l', "--log", action="store_true", help="logarithmic histogram")
-		p.add_argument('-r', "--range", type=str, help="range of histogram bins"
-		               " (min,max)")
-		p.add_argument('-p', "--percentile", type=float,  metavar="PCT",
-		               default=100.0, help="ignore datapoints beyond PCT percentile")
+	heatmap = add_subcmd("heatmap", plot_heatmap, "draw heat map",
+	                     [boolarg('l', "autolabel", "use first column as Y-axis labels"),
+	                      arg('X', "xlabels", "X-axis labels"),
+	                      boolarg('L', "drawlegend", "draw legend"),
+	                      arg('Z', "cblabel", "colorbar label")])
 
-	timechartparser.add_argument('-d', "--duration", action="store_true",
-	                             help="read data items as (label, start, length) instead of"
-	                             " default (label, start, end)")
+	violin = add_subcmd("violin", plot_violin, "draw violin plot",
+	                    [boolarg('d', "medians", "show medians"),
+	                     boolarg('n', "means", "show means"),
+	                     boolarg('a', "extrema", "show extrema"),
+	                     boolarg('H', "horizontal", "create horizontal plot")])
 
-	barparser.add_argument('-n', "--numbers", action="store_true",
-			       help="show numeric values on top of each bar")
+	for p in [bar, heatmap]:
+		add_args(p, [arg('r', "angle", "X-axis label angle (degrees)",
+		                 dest="labelangle", type=float, default=0.0)])
 
-	mainargs = [(('-t', "--title"), dict(type=str, help="plot title")),
-	            (('-x', "--xlabel"), dict(type=str, help="x-axis label")),
-	            (('-X', "--xlim"), dict(type=str, help="x-axis bounds")),
-	            (('-y', "--ylabel"), dict(type=str, help="y-axis label")),
-	            (('-Y', "--ylim"), dict(type=str, help="y-axis bounds")),
-		    (('-b', "--background"), dict(type=str, help="background color",
-						  default="white")),
-	            (('-c', "--colormap"), dict(type=str, help="pyplot color map")),
-	            (('-T', "--tight"),
-	             dict(dest="bbox_inches", action="store_const", default=None,
-	                  const="tight", help="tight bounding box on output files")),
-	            (('-o', "--outfile"),
-	             dict(type=str, help="file to save plot in (default none)")),
-	            (('-r', "--dpi"),
-	             dict(type=int, help="resolution of output file (dots per inch)")),
-	            (('-g', "--geometry"),
-	             dict(type=str, default="8,6",
-	                  help="figure geometry in X,Y format (inches)")),
-	            (('-A', "--logx"),
-	             dict(type=int, default=None, metavar="BASE",
-	                  help="use logarithmic X axis with given base")),
-	            (('-B', "--logy"),
-	             dict(type=int, default=None, metavar="BASE",
-	                  help="use logarithmic Y axis with given base")),
-	            (('-l', "--live"),
-	             dict(action="store_true", help="update plot as data appears")),
-	            (('-H', "--history"),
-	             dict(type=int, default=0, help="number of samples to retain in live mode")),
-	            (('-W', "--window-title"),
-	             dict(type=str, default=None, help="title of plot window"))]
+	for p in [line, bar, cdf]:
+		add_args(p, [arg('L', "legend", "labels for legend")])
 
-	for args, kwargs in mainargs:
-		mainparser.add_argument(*args, **kwargs)
+	for p in [hist, cdf]:
+		add_args(p, [arg('b', "bins", "number of bins (default 15)",
+		                 dest="nbins", type=int, metavar="NBINS", default=15),
+		             boolarg('a', "absolute", "Don't normalize y-axis", dest="norm"),
+		             boolarg('l', "log", "logarithmic histogram"),
+		             arg('r', "range", "range of histogram bins (min,max)"),
+		             arg('p', "percentile", "ignore datapoints beyond PCT percentile",
+		                 type=float,  metavar="PCT", default=100.0)])
 
+	mainargs = [arg('t', "title", "plot title"),
+	            arg('x', "xlabel", "x-axis label"),
+	            arg('y', "ylabel", "y-axis label"),
+	            arg('X', "xlim", "x-axis bounds"),
+	            arg('Y', "ylim", "y-axis bounds"),
+	            arg('o', "outfile", "file to save plot in (default none)"),
+	            arg('c', "colormap", "pyplot color map"),
+	            arg('b', "background", "background color", metavar="COLOR", default="white"),
+	            arg('T', "tight", "tight bounding box on output files", dest="bbox_inches",
+	                action="store_const", const="tight"),
+	            arg('r', "dpi", "resolution of output file (dots per inch)", type=int),
+	            arg('g', "geometry", "figure geometry in X,Y format (inches)",
+	                metavar="X,Y", default="8,6"),
+	            arg('A', "logx", "use logarithmic X axis with given base", type=int,
+	                metavar="BASE"),
+	            arg('B', "logy", "use logarithmic Y axis with given base", type=int,
+	                metavar="BASE"),
+	            boolarg('l', "live", "update plot as data appears"),
+	            arg('H', "history", "number of samples to retain in live mode", type=int,
+	                default=0),
+	            arg('W', "window-title", "title of plot window", metavar="TITLE")]
+
+	add_args(mainparser, mainargs)
+
+	global args
 	args = mainparser.parse_args()
 
 	if not args.outfile and not getenv('DISPLAY'):
 		sys.stderr.write("No output file specified but DISPLAY not set\n")
 		exit(1)
 
+	do_plot()
+
+if __name__ == "__main__":
 	main()
