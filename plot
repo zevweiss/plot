@@ -349,9 +349,9 @@ def main():
 		plt.title(args.title)
 
 	if args.logx:
-		plt.xscale('log')
+		plt.xscale('log', basex=args.logx)
 	if args.logy:
-		plt.yscale('log')
+		plt.yscale('log', basey=args.logy)
 
 	plt.ylim(plot_ymin, plot_ymax)
 	plt.xlim(plot_xmin, plot_xmax)
@@ -467,11 +467,11 @@ if __name__ == "__main__":
 	             dict(type=str, default="8,6",
 	                  help="figure geometry in X,Y format (inches)")),
 	            (('-A', "--logx"),
-	             dict(action="store_const", const=True, default=False,
-	                  help="use logarithmic X axis")),
+	             dict(type=int, default=None, metavar="BASE",
+	                  help="use logarithmic X axis with given base")),
 	            (('-B', "--logy"),
-	             dict(action="store_const", const=True, default=False,
-	                  help="use logarithmic Y axis")),
+	             dict(type=int, default=None, metavar="BASE",
+	                  help="use logarithmic Y axis with given base")),
 	            (('-l', "--live"),
 	             dict(action="store_const", const=True, default=False,
 	                  help="update plot as data appears")),

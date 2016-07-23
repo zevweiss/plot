@@ -44,11 +44,9 @@ Cumulative distribution of word length
 
 ## TODO
 
-- pyplot kwargs in command-line arguments
+- pyplot kwargs in command-line arguments?
 
-- Logarithmic axes
-
-- Generate-a-script mode, i.e. output python code to make the plot (for hand editing)
+- Generate-a-script mode?  (i.e. output python code for further editing/reuse)
 
 ## Author
 
