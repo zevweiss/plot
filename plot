@@ -376,11 +376,10 @@ if __name__ == "__main__":
 	# python 2.7 doesn't support aliases in add_parser, sadly.
 	lineparser = subparsers.add_parser("line", help="draw line plot")
 	lineparser.set_defaults(plotmode=plot_line)
-	lineparser.add_argument('-x', "--xcoord", action="store_const", const=True,
-	                        default=False, help="use first column as X coordinates")
-	lineparser.add_argument('-X', "--xypairs", action="store_const", const=True,
-	                        default=False, help="use even columns as X coordinates, "
-	                        "odd columns as Y")
+	lineparser.add_argument('-x', "--xcoord", action="store_true",
+				help="use first column as X coordinates")
+	lineparser.add_argument('-X', "--xypairs", action="store_true",
+				help="use even columns as X coordinates, odd columns as Y")
 	lineparser.add_argument('-m', "--markers", type=str, help="marker styles")
 	lineparser.add_argument('-s', "--linestyles", type=str, help="line styles")
 
@@ -392,9 +391,8 @@ if __name__ == "__main__":
 
 	barparser = subparsers.add_parser("bar", help="draw bar chart")
 	barparser.set_defaults(plotmode=plot_bars)
-	barparser.add_argument('-s', "--stack", action="store_const",
-	                       default=False, const=True, help="stack bars instead"
-	                       " of grouping them")
+	barparser.add_argument('-s', "--stack", action="store_true",
+			       help="stack bars instead of grouping them")
 
 	cdfparser = subparsers.add_parser("cdf", help="draw cumulative distribution")
 	cdfparser.set_defaults(plotmode=plot_cdf)
@@ -406,12 +404,10 @@ if __name__ == "__main__":
 
 	heatmapparser = subparsers.add_parser("heatmap", help="draw heat map")
 	heatmapparser.set_defaults(plotmode=plot_heatmap)
-	heatmapparser.add_argument('-l', "--autolabel", action="store_const",
-	                           default=False, const=True, help="use first column"
-	                           " as Y-axis labels")
+	heatmapparser.add_argument('-l', "--autolabel", action="store_true",
+				   help="use first column as Y-axis labels")
 	heatmapparser.add_argument('-X', "--xlabels", type=str, help="X-axis labels")
-	heatmapparser.add_argument('-L', "--drawlegend", action="store_const",
-	                           default=False, const=True, help="draw legend")
+	heatmapparser.add_argument('-L', "--drawlegend", action="store_true", help="draw legend")
 	heatmapparser.add_argument('-Z', "--cblabel", type=str, help="colorbar label")
 
 	violinparser = subparsers.add_parser("violin", help="draw violin plot")
@@ -431,22 +427,20 @@ if __name__ == "__main__":
 	for p in [histparser, cdfparser]:
 		p.add_argument('-b', "--bins", dest="nbins", type=int, metavar="NBINS",
 		               default=15, help="number of bins (default 15)")
-		p.add_argument('-a', "--absolute", dest="norm", action="store_const",
-		               const=False, default=True, help="Don't normalize y-axis")
-		p.add_argument('-l', "--log", action="store_const",
-		               default=False, const=True, help="logarithmic histogram")
+		p.add_argument('-a', "--absolute", dest="norm", action="store_true",
+			       help="Don't normalize y-axis")
+		p.add_argument('-l', "--log", action="store_true", help="logarithmic histogram")
 		p.add_argument('-r', "--range", type=str, help="range of histogram bins"
 		               " (min,max)")
 		p.add_argument('-p', "--percentile", type=float,  metavar="PCT",
 		               default=100.0, help="ignore datapoints beyond PCT percentile")
 
-	timechartparser.add_argument('-d', "--duration", action="store_const",
-	                             const=True, default=False, help="read data "
-	                             "items as (label, start, length) instead of "
-	                             "default (label, start, end)")
+	timechartparser.add_argument('-d', "--duration", action="store_true",
+	                             help="read data items as (label, start, length) instead of"
+	                             " default (label, start, end)")
 
-	barparser.add_argument('-n', "--numbers", action="store_const", const=True,
-			       default=False, help="show numeric values on top of each bar")
+	barparser.add_argument('-n', "--numbers", action="store_true",
+			       help="show numeric values on top of each bar")
 
 	mainargs = [(('-t', "--title"), dict(type=str, help="plot title")),
 	            (('-x', "--xlabel"), dict(type=str, help="x-axis label")),
@@ -473,8 +467,7 @@ if __name__ == "__main__":
 	             dict(type=int, default=None, metavar="BASE",
 	                  help="use logarithmic Y axis with given base")),
 	            (('-l', "--live"),
-	             dict(action="store_const", const=True, default=False,
-	                  help="update plot as data appears")),
+	             dict(action="store_true", help="update plot as data appears")),
 	            (('-H', "--history"),
 	             dict(type=int, default=0, help="number of samples to retain in live mode")),
 	            (('-W', "--window-title"),
