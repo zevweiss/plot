@@ -17,7 +17,7 @@ anim = None
 start_time = None
 splitfn = None
 
-plot_ymin = plot_ymax = plot_xmin = plot_xmax = None
+plot_ymax = None
 
 animation = None
 
@@ -121,23 +121,12 @@ def percentile(vals, pct):
 # expects list of single values
 def plot_hist(lines):
 	vals = percentile([float(x[0]) for x in lines], args.percentile)
-	if args.range is not None:
-		rlo, rhi = [float(x) for x in args.range.split(',')]
-		r = rlo, rhi
-	else:
-		r = None
-	plt.hist(vals, args.nbins, range=r, normed=args.norm, color=cmap(0.5))
+	plt.hist(vals, args.nbins, range=args.range, normed=args.norm, color=cmap(0.5))
 
 # expects a list of sets of values
 # FIXME: support different-length columns
 def plot_cdf(lines):
 	maxes = []
-
-	if args.range is not None:
-		rlo, rhi = [float(x) for x in args.range.split(',')]
-		r = rlo, rhi
-	else:
-		r = None
 
 	for i in range(len(lines[0])):
 		vals = percentile([float(x[i]) for x in lines], args.percentile)
@@ -148,7 +137,7 @@ def plot_cdf(lines):
 		except:
 			label = None
 
-		plt.hist(vals, args.nbins, range=r, cumulative=True, histtype='step',
+		plt.hist(vals, args.nbins, range=args.range, cumulative=True, histtype='step',
 		         normed=args.norm, label=label)
 
 	if args.log:
@@ -263,7 +252,7 @@ def plot_heatmap(lines):
 		plt.yticks(np.arange(len(labels))+0.5, labels)
 
 	if args.xlabels is not None:
-		plt.xticks(np.arange(xlen)+0.5, args.xlabels.split(','),
+		plt.xticks(np.arange(xlen)+0.5, args.xlabels,
 		           rotation=args.labelangle, rotation_mode="anchor",
 		           ha=["center", "right", "left"][cmp(args.labelangle, 0.0)])
 
@@ -295,16 +284,8 @@ def get_input():
 			break
 		yield s
 
-def parse_bounds(s):
-	if s is None:
-		return (None, None)
-	lo, hi = s.split(',')
-	lo = None if lo == '' else float(lo)
-	hi = None if hi == '' else float(hi)
-	return (lo, hi)
-
 def do_plot():
-	global cmap, start_time, splitfn, plot_ymin, plot_ymax, plot_xmin, plot_xmax
+	global cmap, start_time, splitfn, plot_ymax
 	if args.live:
 		global animation
 		import matplotlib.animation as animation
@@ -336,8 +317,7 @@ def do_plot():
 			sys.stderr.write('\n')
 			exit(1)
 
-	plot_ymin, plot_ymax = parse_bounds(args.ylim)
-	plot_xmin, plot_xmax = parse_bounds(args.xlim)
+	plot_ymax = args.ylim[1]
 
 	args.plotmode(lines)
 
@@ -353,11 +333,10 @@ def do_plot():
 	if args.logy:
 		plt.yscale('log', basey=args.logy)
 
-	plt.ylim(plot_ymin, plot_ymax)
-	plt.xlim(plot_xmin, plot_xmax)
+	plt.xlim(*args.xlim)
+	plt.ylim(*args.ylim)
 
-	xgeom, ygeom = [float(s) for s in args.geometry.split(',')]
-	plt.gcf().set_size_inches(xgeom, ygeom, forward=True)
+	plt.gcf().set_size_inches(*args.geometry, forward=True)
 	plt.gca().set_axis_bgcolor(args.background)
 
 	if args.window_title:
@@ -379,7 +358,8 @@ def main():
 	def add_args(parser, args):
 		for base, opt in args:
 			s, l, h = base
-			parser.add_argument('-'+s, "--"+l, help=h, **opt)
+			flags = (('-'+s,) if s is not None else ()) + ("--"+l,)
+			parser.add_argument(*flags, help=h, **opt)
 
 	# helper to create one of the above tuples
 	def arg(s, l, h, **kwargs):
@@ -394,6 +374,26 @@ def main():
 		parser = subparsers.add_parser(cmd, help=desc)
 		parser.set_defaults(plotmode=func)
 		add_args(parser, args)
+		return parser
+
+	def listparser(itemparser, allow_missing=False, reqlen=None):
+		def parser(arg):
+			if allow_missing:
+				p = lambda s: None if s == '' else itemparser(s)
+			else:
+				p = itemparser
+			try:
+				v = [p(e) for e in arg.strip().split(',')]
+				if reqlen is not None:
+					assert len(v) == reqlen
+				return v
+			except:
+				msg = 'invalid argument "%s"' % arg
+				count = "%d " % reqlen if reqlen is not None else ""
+				count += "[optional] " if allow_missing else ""
+				msg += " (should be comma-separated list of %s%ss)" \
+				       % (count, itemparser.__name__)
+				raise argparse.ArgumentTypeError(msg)
 		return parser
 
 	line = add_subcmd("line", plot_line, "draw line plot",
@@ -419,7 +419,7 @@ def main():
 
 	heatmap = add_subcmd("heatmap", plot_heatmap, "draw heat map",
 	                     [boolarg('l', "autolabel", "use first column as Y-axis labels"),
-	                      arg('X', "xlabels", "X-axis labels"),
+	                      arg('X', "xlabels", "X-axis labels", type=listparser(str)),
 	                      boolarg('L', "drawlegend", "draw legend"),
 	                      arg('Z', "cblabel", "colorbar label")])
 
@@ -441,15 +441,21 @@ def main():
 		                 dest="nbins", type=int, metavar="NBINS", default=15),
 		             boolarg('a', "absolute", "Don't normalize y-axis", dest="norm"),
 		             boolarg('l', "log", "logarithmic histogram"),
-		             arg('r', "range", "range of histogram bins (min,max)"),
+		             arg('r', "range", "range of histogram bins (min,max)",
+				 type=listparser(float, reqlen=2)),
 		             arg('p', "percentile", "ignore datapoints beyond PCT percentile",
 		                 type=float,  metavar="PCT", default=100.0)])
 
+	# "[LO],[HI]" would be preferable here instead of "(LO),(HI)", but that
+	# unfortunately causes something in argparse to barf when formatting
+	# help output.
+	axlim = dict(default=(None,None), metavar="(LO),(HI)",
+		     type=listparser(float, allow_missing=True, reqlen=2))
 	mainargs = [arg('t', "title", "plot title"),
 	            arg('x', "xlabel", "x-axis label"),
 	            arg('y', "ylabel", "y-axis label"),
-	            arg('X', "xlim", "x-axis bounds"),
-	            arg('Y', "ylim", "y-axis bounds"),
+	            arg('X', "xlim", "x-axis bounds", **axlim),
+	            arg('Y', "ylim", "y-axis bounds", **axlim),
 	            arg('o', "outfile", "file to save plot in (default none)"),
 	            arg('c', "colormap", "pyplot color map"),
 	            arg('b', "background", "background color", metavar="COLOR", default="white"),
@@ -457,7 +463,7 @@ def main():
 	                action="store_const", const="tight"),
 	            arg('r', "dpi", "resolution of output file (dots per inch)", type=int),
 	            arg('g', "geometry", "figure geometry in X,Y format (inches)",
-	                metavar="X,Y", default="8,6"),
+	                type=listparser(float, reqlen=2), metavar="X,Y", default=[8.0, 6.0]),
 	            arg('A', "logx", "use logarithmic X axis with given base", type=int,
 	                metavar="BASE"),
 	            arg('B', "logy", "use logarithmic Y axis with given base", type=int,
