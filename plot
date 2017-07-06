@@ -30,12 +30,12 @@ def plot_line(lines):
 	global anim
 
 	if args.xypairs and args.xcoord:
-		sys.stderr.write("-x and -X conflict for 'line'")
+		sys.stderr.write("-x and -X conflict for 'line'\n")
 		exit(1)
 
 	if args.xypairs:
 		if len(lines[0]) < 2 or len(lines[0]) % 2 != 0:
-			sys.stderr.write("input malformed for 'line -X'")
+			sys.stderr.write("input malformed for 'line -X'\n")
 			exit(1)
 		odds = [i for i in range(0, len(lines[0])) if i % 2 == 1]
 		evens = [i for i in range(0, len(lines[0])) if i % 2 == 0]
@@ -43,7 +43,7 @@ def plot_line(lines):
 		allys = [[float(l[i]) for l in lines] for i in odds]
 	elif args.xcoord:
 		if len(lines[0]) < 2:
-			sys.stderr.write("'line -x' requires multiple columns")
+			sys.stderr.write("'line -x' requires multiple columns\n")
 			exit(1)
 		allxs = [[float(l[0]) for l in lines]] * (len(lines[0]) - 1)
 		allys = [[float(l[c]) for l in lines] for c in range(1, len(lines[0]))]
