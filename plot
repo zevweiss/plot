@@ -3,7 +3,9 @@
 import numpy as np
 import matplotlib
 from os import getenv
-if not getenv('DISPLAY'):
+if getenv('DISPLAY'):
+	matplotlib.use('TkAgg')
+else:
 	matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
