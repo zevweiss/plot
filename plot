@@ -51,20 +51,26 @@ def plot_line(lines):
 		allxs = [list(range(0, len(lines)))] * len(lines[0])
 		allys = [[float(l[c]) for l in lines] for c in range(0, len(lines[0]))]
 
-	plotlines = []
-	for i, (xs, ys) in enumerate(zip(allxs, allys)):
-		label = args.legend[i] if args.legend is not None else None
+	def mkcolor(i):
+		return cmap(float(i) / float(max(len(allys), 2) - 1))
+	colors = map(mkcolor, range(len(allys)))
 
-		kw = {}
-		for a in ["markers", "linestyles"]:
-			arg = getattr(args, a)
-			if arg is not None:
-				v = arg[i % len(arg)]
-				# HACK.
-				kw[a[:-1]] = v
+	if args.stack:
+		plt.stackplot(allxs[0], allys, colors=colors, labels=args.legend)
+	else:
+		plotlines = []
+		for i, (xs, ys) in enumerate(zip(allxs, allys)):
+			kw = {}
+			for a in ["markers", "linestyles"]:
+				arg = getattr(args, a)
+				if arg is not None:
+					v = arg[i % len(arg)]
+					# HACK.
+					kw[a[:-1]] = v
 
-		color = cmap(float(i) / float(max(len(allys), 2)-1))
-		plotlines += plt.plot(xs, ys, label=label, color=color, **kw)
+			label = args.legend[i] if args.legend is not None else None
+			color = colors[i]
+			plotlines += plt.plot(xs, ys, label=label, color=color, **kw)
 
 	if args.legend is not None:
 		plt.legend(loc=0)
@@ -415,8 +421,7 @@ def main():
 	hist = add_subcmd("hist", plot_hist, "draw histogram")
 
 	bar = add_subcmd("bar", plot_bars, "draw bar chart",
-	                 [boolarg('s', "stack", "stack bars instead of grouping them"),
-	                  boolarg('n', "numbers", "show numeric values on top of each bar")])
+	                 [boolarg('n', "numbers", "show numeric values on top of each bar")])
 
 	cdf = add_subcmd("cdf", plot_cdf, "draw cumulative distribution")
 
@@ -443,6 +448,9 @@ def main():
 
 	for p in [line, bar, cdf]:
 		add_args(p, [arg('L', "legend", "labels for legend")])
+
+	for p in [line, bar]:
+		add_args(p, [boolarg('a', "stack", "stack bars instead of grouping them")])
 
 	for p in [hist, cdf]:
 		add_args(p, [arg('b', "bins", "number of bins (default 15)",
