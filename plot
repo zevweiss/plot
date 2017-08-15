@@ -370,7 +370,7 @@ def do_plot():
 		plt.vlines(args.vline, *plt.ylim())
 
 	plt.gcf().set_size_inches(*args.geometry, forward=True)
-	plt.gca().set_axis_bgcolor(args.background)
+	plt.gca().set_facecolor(args.background)
 
 	if args.window_title:
 		plt.gcf().canvas.set_window_title(args.window_title)
