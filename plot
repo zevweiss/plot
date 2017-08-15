@@ -275,9 +275,29 @@ def plot_heatmap(lines):
 # expects small(ish?) set of lines, each of which will be plotted as a
 # violin representing the datapoints on that line
 def plot_violin(lines):
-	values = [[float(x) for x in l] for l in lines]
+	if args.autolabel:
+		values = [[float(x) for x in l[1:]] for l in lines]
+		labels = [l[0] for l in lines]
+	else:
+		values = [[float(x) for x in l] for l in lines]
+	if args.discard != 0:
+		trimmed = []
+		pct = float(args.discard) / 100.0
+		for vs in values:
+			drop = int(pct * len(vs))
+			vs = sorted(vs)[drop:-drop]
+			trimmed.append(vs)
+		values = trimmed
 	plt.violinplot(values, showmedians=args.medians, showmeans=args.means, showextrema=args.extrema,
 	               vert=not args.horizontal)
+	if args.autolabel:
+		if args.horizontal:
+			kwargs = dict(va="center")
+		else:
+			kwargs = dict(rotation_mode="anchor",
+				      ha=["center", "right", "left"][cmp(args.labelangle, 0.0)])
+		tickfn = plt.yticks if args.horizontal else plt.xticks
+		tickfn(np.arange(len(values))+1, labels, rotation=args.labelangle, **kwargs)
 
 def get_inputline():
 	while True:
@@ -437,12 +457,15 @@ def main():
 	                      arg('Z', "cblabel", "colorbar label")])
 
 	violin = add_subcmd("violin", plot_violin, "draw violin plot",
-	                    [boolarg('d', "medians", "show medians"),
+	                    [arg('D', "discard", "discard data points in highest and lowest N percentiles",
+	                         type=int, default=0),
+	                     boolarg('d', "medians", "show medians"),
 	                     boolarg('n', "means", "show means"),
 	                     boolarg('a', "extrema", "show extrema"),
-	                     boolarg('H', "horizontal", "create horizontal plot")])
+	                     boolarg('H', "horizontal", "create horizontal plot"),
+			     boolarg('l', "autolabel", "use first column as X-axis labels")])
 
-	for p in [bar, heatmap]:
+	for p in [bar, heatmap, violin]:
 		add_args(p, [arg('r', "angle", "X-axis label angle (degrees)",
 		                 dest="labelangle", type=float, default=0.0)])
 
